@@ -13,17 +13,18 @@ module.exports = (sequelize, DataTypes) => {
         adminID,
       });
     }
+
+    static associate(models) {
+      // define association here
+      Election.belongsTo(models.Admin, {
+        foreignKey: "adminID",
+      });
+    }
     static getElections(adminID) {
       return this.findAll({
         where: {
           adminID,
         },
-      });
-    }
-    static associate(models) {
-      // define association here
-      Election.belongsTo(models.Admin, {
-        foreignKey: "adminID",
       });
     }
   }
