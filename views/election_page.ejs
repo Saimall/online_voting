@@ -9,19 +9,20 @@
 </head>
 <body>
     <%- include('heading.ejs') %>
-    <table>
-    <div class="my-6 mx-10">
+    <div class="grid grid-cols-6">
+        <div class="col-start-3 col-span-2">
         <h3 class="text-4xl my-4 font-medium"><%= title %></h3>
         <div class="my-8">
-            <h2 class="my-2 text-lg text-black flex gap-1">Your election has <span class="text-black-600"> <%= nq %> </span> questions in the ballot</h2>
+            <h2 class="my-2 text-lg text-black flex gap-1">your election has <span class="text-black-600"> <%= nq %> </span> questions</h2>
             <a href="/questions/<%= id %>" class="py-1 hover:text-black-800 text-black-600">Manage questions</a>
         </div>
         <div class="my-8">
-            <h2 class="my-2 text-lg text-black flex gap-1">Your election has <span class="text-black-600"> <%= nv %> </span> registered voters.</h2>
+            <h2 class="my-2 text-lg text-black flex gap-1">your election has <span class="text-black-600"> <%= nv %> </span>  voters.</h2>
             <a href="" class="py-1 hover:text-black-800 text-black-600">Manage voters</a>
         </div>
-        <div class="bg-green-800 rounded w-fit px-4 py-1 hover:bg-black-600">
-            <a href="" class="text-white">Launch election</a>
+        <div>
+            <a href="" class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">Launch election</a>
+        </div>
         </div>
     </div>
     </table>

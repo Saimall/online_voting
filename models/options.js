@@ -14,6 +14,18 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
+    static async modifyoption(newValue, id) {
+      return options.update(
+        {
+          optionname: newValue,
+        },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
+    }
     static removeoptions(id) {
       return this.destroy({
         where: {

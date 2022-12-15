@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
+
     static addquestion({ questionname, description, electionID }) {
       return this.create({
         questionname,
@@ -29,6 +30,19 @@ module.exports = (sequelize, DataTypes) => {
           id,
         },
       });
+    }
+    static modifyquestion(questionname, desctiption, questionID) {
+      return this.update(
+        {
+          questionname: questionname,
+          description: desctiption,
+        },
+        {
+          where: {
+            id: questionID,
+          },
+        }
+      );
     }
     static retrievequestions(electionID) {
       return this.findAll({

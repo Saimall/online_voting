@@ -110,7 +110,18 @@ app.get(
     }
   }
 );
+app.get(
+  "/election",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const loggedInAdminID = request.user.id;
+    const elections = await Election.findAll({
+      where: { adminID: loggedInAdminID },
+    });
 
+    return response.json({ elections });
+  }
+);
 app.get(
   "/create",
   connectEnsureLogin.ensureLoggedIn(),
@@ -140,10 +151,14 @@ app.post(
 );
 
 app.get("/signup", (request, response) => {
-  response.render("signup", {
-    title: "Create admin account",
-    csrfToken: request.csrfToken(),
-  });
+  try {
+    response.render("signup", {
+      title: "Create admin account",
+      csrfToken: request.csrfToken(),
+    });
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 app.get("/signout", (request, response, next) => {
@@ -194,7 +209,6 @@ app.post("/admin", async (request, response) => {
       }
     });
   } catch (error) {
-    request.flash("error", error.message);
     return response.redirect("/signup");
   }
 });
@@ -231,10 +245,12 @@ app.get(
       request.user.id
     );
     const questions1 = await questions.retrievequestions(request.params.id);
+    const election = await Election.findByPk(request.params.id);
     response.render("questions", {
       title: electionlist.electionName,
       id: request.params.id,
       questions: questions1,
+      election: election,
       csrfToken: request.csrfToken(),
     });
   }
@@ -333,6 +349,75 @@ app.delete(
     } catch (error) {
       console.log(error);
       return response.status(422).json(error);
+    }
+  }
+);
+app.get(
+  "/election/:electionID/question/:questionID/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const adminID = request.user.id;
+    const admin = await Admin.findByPk(adminID);
+    const election = await Election.findByPk(request.params.electionID);
+    const Question = await questions.findByPk(request.params.questionID);
+    response.render("editquestion", {
+      username: admin.name,
+      election: election,
+      question: Question,
+      csrf: request.csrfToken(),
+    });
+  }
+);
+app.post(
+  "/election/:electionID/question/:questionID/update",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    try {
+      await questions.modifyquestion(
+        request.body.questionname,
+        request.body.description,
+        request.params.questionID
+      );
+      response.redirect(`/questions/${request.params.electionID}`);
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+  }
+);
+app.get(
+  "/election/:electionID/question/:questionID/option/:optionID/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const adminID = request.user.id;
+    const admin = await Admin.findByPk(adminID);
+    const election = await Election.findByPk(request.params.electionID);
+    const Question = await questions.findByPk(request.params.questionID);
+    const option = await options.findByPk(request.params.optionID);
+    response.render("editoption", {
+      username: admin.name,
+      election: election,
+      question: Question,
+      option: option,
+      csrf: request.csrfToken(),
+    });
+  }
+);
+app.post(
+  "/election/:electionID/question/:questionID/option/:optionID/update",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    try {
+      await options.modifyoption(
+        request.body.optionname,
+        request.params.optionID
+      );
+      response.redirect(
+        `/displayelections/correspondingquestion/${request.params.electionID}/${request.params.questionID}/options`
+      );
+    } catch (error) {
+      console.log(error);
+      return;
     }
   }
 );
