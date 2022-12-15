@@ -8,20 +8,28 @@
     <title><%= title %></title>
 </head>
 <body>
+    <div align="center">
     <%- include('heading.ejs') %>
+   </div>
     <div class="my-3 mx-6" >
         <div class="flex gap-2 py-4 justify-between">
             <div> 
+            <b>
             <h5 class="text-xl">My Elections List</h5>
-        </div>
+            </b>
+        </div>  
             <div class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">
                 <a href="create" class="text-white"> create a new election</a>
             </div>
        
         </div>
+    
         <div class="flex-auto">
             <%- include('lists_of_elections.ejs') %>
         </div>
     </div>
+        </div>
+    </div>
 </body>
+</center>
 </html>

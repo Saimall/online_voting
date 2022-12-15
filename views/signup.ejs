@@ -14,33 +14,51 @@
             <div>
             </div>
            <div style="background-color: bisque;">
-                <div class="h-2 bg-cream-400 rounded-t-md"></div>
                 <form action="/admin" method="post" class="px-8 py-6">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                    <div class="py-3">
-                    <label for="firstName" >First name</label>
-                    <input id="firstName" name="firstName" type="text" placeholder="First name" class="border border-gray-300 text-gray-900 rounded p-2 w-full" required>
-                   </div>
-                <div class="py-3">
+                   <table>
+                    <tr>
+                       <td>
+                        <label for="firstName" >First name</label>
+                    <input id="firstName" name="firstName" type="text" placeholder="First name" class="border border-gray-300 text-gray-900 rounded p-2 w-full" required>  
+                </td>
+                </tr>
+                <tr>
+                    <td>
                     <label for="lastName">Last name</label>
                     <input id="lastName" name="lastName" type="text" placeholder="Last name" class="border border-gray-300 text-gray-900 rounded p-2 w-full" required>
-                </div>
-                <div class="py-3">    
+                </td>
+                </tr>
+                <tr>
+                    <td>
                    <label for="email" >Email</label>
                     <input id="email" name="email" type="email" placeholder="Email"  class="border border-gray-300 text-gray-900 rounded p-2 w-full" required>
-                </div>
-                <div class="py-3">
+                </td>
+                </tr>
+                <tr>
+                    <td>
                     <label for="password" >Password</label>
                     <input id="password" name="password" type="password" placeholder="Password" class="border w-full h-5 px-3 py-5 mt-2 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md" required>
-                </div>
-                    <button type="submit" class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-3 py-2">Sign up</button>
+                </td>
+                </tr>
+                <tr>
+                    <td>
+                    <button type="submit" class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-3 py-1">Sign up</button><br>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <h1> Existing user?  <a href="/login" class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-3 py-1"> Sign in</a></h1>
+                    </td>
+                </tr>
+                </table>
                 </div> 
                 </form>
-                <div>
-                    <h1> Existing user?</h1><br><a href="/login" class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-3 py-2"> Sign in</a>
-                </div>
+                    
+            
                 
             </div>
+        </table>
             
     </div>
     </div>
