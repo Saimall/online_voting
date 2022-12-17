@@ -12,16 +12,27 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "electionID",
       });
     }
-    // define association here
-    static async add(voterID, password, electionID) {
-      const res = await Voters.create({
-        voterID: voterID,
-        password: password,
-        electionID: electionID,
-        voted: false,
-        responses: [],
+    static add(voterid, vote, password, electionID) {
+      return this.create({
+        voterid,
+        vote,
+        password,
+        electionID,
       });
-      return res;
+    }
+    static retrivevoters(electionID) {
+      return this.findAll({
+        where: {
+          electionID,
+        },
+      });
+    }
+    static countvoters(voterid) {
+      return this.count({
+        where: {
+          voterid,
+        },
+      });
     }
 
     static async delete(voterID) {

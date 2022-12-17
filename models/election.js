@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
         where: {
           adminID,
         },
+        order: [["id", "ASC"]],
       });
     }
     static associate(models) {

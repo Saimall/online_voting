@@ -353,14 +353,14 @@ app.delete(
   }
 );
 app.get(
-  "/election/:electionID/question/:questionID/edit",
+  "/elections/:electionID/questions/:questionID/modify",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     const adminID = request.user.id;
     const admin = await Admin.findByPk(adminID);
     const election = await Election.findByPk(request.params.electionID);
     const Question = await questions.findByPk(request.params.questionID);
-    response.render("editquestion", {
+    response.render("modifyquestion", {
       username: admin.name,
       election: election,
       question: Question,
@@ -369,7 +369,7 @@ app.get(
   }
 );
 app.post(
-  "/election/:electionID/question/:questionID/update",
+  "/elections/:electionID/questions/:questionID/modify",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     try {
@@ -386,7 +386,7 @@ app.post(
   }
 );
 app.get(
-  "/election/:electionID/question/:questionID/option/:optionID/edit",
+  "/elections/:electionID/questions/:questionID/options/:optionID/modify",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     const adminID = request.user.id;
@@ -394,7 +394,7 @@ app.get(
     const election = await Election.findByPk(request.params.electionID);
     const Question = await questions.findByPk(request.params.questionID);
     const option = await options.findByPk(request.params.optionID);
-    response.render("editoption", {
+    response.render("modifyoption", {
       username: admin.name,
       election: election,
       question: Question,
@@ -404,7 +404,7 @@ app.get(
   }
 );
 app.post(
-  "/election/:electionID/question/:questionID/option/:optionID/update",
+  "/elections/:electionID/questions/:questionID/options/:optionID/modify",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     try {

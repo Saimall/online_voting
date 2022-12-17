@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         where: {
           id,
         },
+        order: [["id", "ASC"]],
       });
     }
     static removequestion(id) {
