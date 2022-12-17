@@ -78,11 +78,10 @@ describe("Online election test suite ", function () {
     expect(response.statusCode).toBe(302);
   });
 
-  test("Adding a question", async () => {
+  test("testing adding a question", async () => {
     const agent = request.agent(server);
     await login(agent, "sai1@test.com", "12345678");
 
-    //create new election
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
@@ -96,7 +95,6 @@ describe("Online election test suite ", function () {
     const electionCount = parsedResponse.elections_list.length;
     const latestElection = parsedResponse.elections_list[electionCount - 1];
 
-    //add a question
     res = await agent.get(`/questionscreate/${latestElection.id}`);
     csrfToken = extractCsrfToken(res);
     let response = await agent
@@ -109,11 +107,10 @@ describe("Online election test suite ", function () {
     expect(response.statusCode).toBe(302);
   });
 
-  test("Deleting a question", async () => {
+  test("testing deleting a question", async () => {
     const agent = request.agent(server);
     await login(agent, "sai1@test.com", "12345678");
 
-    //create new election
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
@@ -127,7 +124,6 @@ describe("Online election test suite ", function () {
     const electionCount = parsedResponse.elections_list.length;
     const latestElection = parsedResponse.elections_list[electionCount - 1];
 
-    //add a question
     res = await agent.get(`/questionscreate/${latestElection.id}`);
     csrfToken = extractCsrfToken(res);
     await agent.post(`/questionscreate/${latestElection.id}`).send({
@@ -175,11 +171,10 @@ describe("Online election test suite ", function () {
     expect(parsedDeleteResponse2).toBe(false);
   });
 
-  test("Updating a question", async () => {
+  test("testing updating a question", async () => {
     const agent = request.agent(server);
     await login(agent, "sai1@test.com", "12345678");
 
-    //create new election
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
@@ -194,7 +189,6 @@ describe("Online election test suite ", function () {
     const latestElection =
       parsedGroupedResponse.elections_list[electionCount - 1];
 
-    //add a question
     res = await agent.get(`/questionscreate/${latestElection.id}`);
     csrfToken = extractCsrfToken(res);
     await agent.post(`/questionscreate/${latestElection.id}`).send({
@@ -227,11 +221,10 @@ describe("Online election test suite ", function () {
     expect(res.statusCode).toBe(302);
   });
 
-  test("Adding a option", async () => {
+  test("testing adding a option", async () => {
     const agent = request.agent(server);
     await login(agent, "sai1@test.com", "12345678");
 
-    //create new election
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
@@ -246,7 +239,6 @@ describe("Online election test suite ", function () {
     const latestElection =
       parsedGroupedResponse.elections_list[electionCount - 1];
 
-    //add a question
     res = await agent.get(`/questionscreate/${latestElection.id}`);
     csrfToken = extractCsrfToken(res);
     await agent.post(`/questionscreate/${latestElection.id}`).send({
@@ -279,11 +271,10 @@ describe("Online election test suite ", function () {
     expect(res.statusCode).toBe(302);
   });
 
-  test("Deleting a option", async () => {
+  test("testing deleting a option", async () => {
     const agent = request.agent(server);
     await login(agent, "sai1@test.com", "12345678");
 
-    //create new election
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
@@ -298,7 +289,6 @@ describe("Online election test suite ", function () {
     const latestElection =
       parsedElectionsResponse.elections_list[electionCount - 1];
 
-    //add a question
     res = await agent.get(`/questionscreate/${latestElection.id}`);
     csrfToken = extractCsrfToken(res);
     await agent.post(`/questionscreate/${latestElection.id}`).send({
@@ -362,11 +352,10 @@ describe("Online election test suite ", function () {
     expect(DeleteResponse2).toBe(false);
   });
 
-  test("Updating a option", async () => {
+  test("testing updating a option", async () => {
     const agent = request.agent(server);
     await login(agent, "sai1@test.com", "12345678");
 
-    //create new election
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
@@ -381,7 +370,6 @@ describe("Online election test suite ", function () {
     const latestElection =
       parsedElectionsResponse.elections_list[electionCount - 1];
 
-    //add a question
     res = await agent.get(`/questionscreate/${latestElection.id}`);
     csrfToken = extractCsrfToken(res);
     await agent.post(`/questionscreate/${latestElection.id}`).send({
@@ -435,4 +423,21 @@ describe("Online election test suite ", function () {
       });
     expect(res.statusCode).toBe(302);
   });
+  // test("testing adding of voters",async()=>{
+  //   const agent = request.agent(server);
+  //   await login(agent, "sai1@test.com", "12345678");
+
+  //   let res = await agent.get("/create");
+  //   let csrfToken = extractCsrfToken(res);
+  //   await agent.post("/elections").send({
+  //     electionName: "Test election",
+  //     _csrf: csrfToken,
+  //   });
+  //   const groupedResponse = await agent
+  //     .get("/elections")
+  //     .set("Accept", "application/json");
+  //   const parsedResponse = JSON.parse(groupedResponse.text);
+  //   const electionCount = parsedResponse.elections_list.length;
+  //   const latestElection = parsedResponse.elections_list[electionCount - 1];
+  // })
 });

@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const csrf = require("tiny-csrf");
 const cookieParser = require("cookie-parser");
-const { Admin, Election, questions, options } = require("./models");
+const { Admin, Election, questions, options, Voters } = require("./models");
 const bodyParser = require("body-parser");
 const connectEnsureLogin = require("connect-ensure-login");
 const LocalStratergy = require("passport-local");
@@ -37,37 +37,9 @@ app.use((request, response, next) => {
 });
 app.use(passport.initialize());
 app.use(passport.session());
-// passport.use(
-//   "voter-local",
-//   new localStrategy(
-//     {
-//       usernameField: "voterID",
-//       passwordField: "password",
-//       passReqToCallback: true,
-//     },
-//     (request, username, password, done) => {
-//       Voter.findOne({
-//         where: { voterID: username, electionID: request.params.id },
-//       })
-//         .then(async (voter) => {
-//           const result = await bcrypt.compare(password, voter.password);
-//           if (result) {
-//             return done(null, voter);
-//           } else {
-//             return done(null, false, { message: "Invalid password" });
-//           }
-//         })
-//         .catch((error) => {
-//           console.log(error);
-//           return done(null, false, {
-//             message: "This voter is not registered",
-//           });
-//         });
-//     }
-//   )
-// );
 
 passport.use(
+  "user-local",
   new LocalStratergy(
     {
       usernameField: "email",
@@ -85,6 +57,35 @@ passport.use(
         })
         .catch(() => {
           return done(null, false, { message: "Invalid Email-ID" });
+        });
+    }
+  )
+);
+passport.use(
+  "voter-local",
+  new LocalStratergy(
+    {
+      usernameField: "voterID",
+      passwordField: "password",
+      passReqToCallback: true,
+    },
+    (request, username, password, done) => {
+      Voters.findOne({
+        where: { voterID: username, electionID: request.params.id },
+      })
+        .then(async (voter) => {
+          const result = await bcrypt.compare(password, voter.password);
+          if (result) {
+            return done(null, voter);
+          } else {
+            return done(null, false, { message: "Invalid password" });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          return done(null, false, {
+            message: "This voter is not registered",
+          });
         });
     }
   )
@@ -217,7 +218,7 @@ app.get("/login", (request, response) => {
 
 app.post(
   "/session",
-  passport.authenticate("local", {
+  passport.authenticate("user-local", {
     failureRedirect: "/login",
     failureFlash: true,
   }),
@@ -259,11 +260,12 @@ app.get(
       const countofquestions = await questions.countquestions(
         request.params.id
       );
+      const countofvoters = await Voters.countvoters(request.params.id);
       response.render("election_page", {
         id: request.params.id,
         title: electionname.electionName,
         nq: countofquestions,
-        nv: 47,
+        nv: countofvoters,
       });
     } catch (error) {
       console.log(error);
@@ -468,6 +470,77 @@ app.post(
     } catch (error) {
       console.log(error);
       return;
+    }
+  }
+);
+
+app.get(
+  "/voters/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const electionlist = await Election.getElections(
+      request.params.id,
+      request.user.id
+    );
+    const voterlist = await Voters.retrivevoters(request.params.id);
+    const election = await Election.findByPk(request.params.id);
+    if (request.accepts("html")) {
+      response.render("voters", {
+        title: electionlist.electionName,
+        id: request.params.id,
+        voters: voterlist,
+        election: election,
+        csrfToken: request.csrfToken(),
+      });
+    } else {
+      return response.json({
+        voterlist,
+      });
+    }
+  }
+);
+app.get("/voters/listofelections/:id", async (request, response) => {
+  try {
+    const electionname = await Election.getElections(
+      request.params.id,
+      request.user.id
+    );
+    const countofquestions = await questions.countquestions(request.params.id);
+    const countofvoters = await Voters.countvoters(request.params.id);
+    response.render("election_page", {
+      id: request.params.id,
+      title: electionname.electionName,
+      nq: countofquestions,
+      nv: countofvoters,
+    });
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+
+app.get(
+  "/voterscreate/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    response.render("createvoter", {
+      id: request.params.id,
+      csrfToken: request.csrfToken(),
+    });
+  }
+);
+
+app.post(
+  "/createvoter/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
+    try {
+      await Voters.add(request.body.voterid, hashedPwd, request.params.id);
+      return response.redirect(`/voters/${request.params.id}`);
+    } catch (error) {
+      console.log(error);
+      return response.status(422).json(error);
     }
   }
 );

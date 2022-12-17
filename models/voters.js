@@ -12,12 +12,12 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "electionID",
       });
     }
-    static add(voterid, vote, password, electionID) {
+    static add(voterid, password, electionID) {
       return this.create({
-        voterid,
-        vote,
-        password,
-        electionID,
+        voterid: voterid,
+        voted: false,
+        password: password,
+        electionID: electionID,
       });
     }
     static retrivevoters(electionID) {
@@ -27,21 +27,20 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
-    static countvoters(voterid) {
+    static countvoters(electionID) {
       return this.count({
         where: {
-          voterid,
+          electionID,
         },
       });
     }
 
-    static async delete(voterID) {
-      const res = await Voters.destroy({
+    static delete(voterID) {
+      return this.destroy({
         where: {
           id: voterID,
         },
       });
-      return res;
     }
   }
   Voters.init(
