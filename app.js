@@ -37,6 +37,35 @@ app.use((request, response, next) => {
 });
 app.use(passport.initialize());
 app.use(passport.session());
+// passport.use(
+//   "voter-local",
+//   new localStrategy(
+//     {
+//       usernameField: "voterID",
+//       passwordField: "password",
+//       passReqToCallback: true,
+//     },
+//     (request, username, password, done) => {
+//       Voter.findOne({
+//         where: { voterID: username, electionID: request.params.id },
+//       })
+//         .then(async (voter) => {
+//           const result = await bcrypt.compare(password, voter.password);
+//           if (result) {
+//             return done(null, voter);
+//           } else {
+//             return done(null, false, { message: "Invalid password" });
+//           }
+//         })
+//         .catch((error) => {
+//           console.log(error);
+//           return done(null, false, {
+//             message: "This voter is not registered",
+//           });
+//         });
+//     }
+//   )
+// );
 
 passport.use(
   new LocalStratergy(
@@ -99,29 +128,35 @@ app.get(
     let loggedinuser = request.user.firstName + " " + request.user.lastName;
     try {
       const elections_list = await Election.getElections(request.user.id);
-      response.render("elections", {
-        title: "Online Voting interface",
-        userName: loggedinuser,
-        elections_list,
-      });
+      if (request.accepts("html")) {
+        response.render("elections", {
+          title: "Online Voting interface",
+          userName: loggedinuser,
+          elections_list,
+        });
+      } else {
+        return response.json({
+          elections_list,
+        });
+      }
     } catch (error) {
       console.log(error);
       return response.status(422).json(error);
     }
   }
 );
-app.get(
-  "/election",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    const loggedInAdminID = request.user.id;
-    const elections = await Election.findAll({
-      where: { adminID: loggedInAdminID },
-    });
+// app.get(
+//   "/election",
+//   connectEnsureLogin.ensureLoggedIn(),
+//   async (request, response) => {
+//     const loggedInAdminID = request.user.id;
+//     const elections = await Election.findAll({
+//       where: { adminID: loggedInAdminID },
+//     });
 
-    return response.json({ elections });
-  }
-);
+//     return response.json({ elections });
+//   }
+// );
 app.get(
   "/create",
   connectEnsureLogin.ensureLoggedIn(),
@@ -246,13 +281,19 @@ app.get(
     );
     const questions1 = await questions.retrievequestions(request.params.id);
     const election = await Election.findByPk(request.params.id);
-    response.render("questions", {
-      title: electionlist.electionName,
-      id: request.params.id,
-      questions: questions1,
-      election: election,
-      csrfToken: request.csrfToken(),
-    });
+    if (request.accepts("html")) {
+      response.render("questions", {
+        title: electionlist.electionName,
+        id: request.params.id,
+        questions: questions1,
+        election: election,
+        csrfToken: request.csrfToken(),
+      });
+    } else {
+      return response.json({
+        questions1,
+      });
+    }
   }
 );
 app.get(
@@ -290,18 +331,28 @@ app.get(
   "/displayelections/correspondingquestion/:id/:questionID/options",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    const question = await questions.retrievequestion(
-      request.params.questionID
-    );
-    const option = await options.retrieveoptions(request.params.questionID);
-    response.render("questiondisplay", {
-      title: question.question,
-      description: question.description,
-      id: request.params.id,
-      questionID: request.params.questionID,
-      option,
-      csrfToken: request.csrfToken(),
-    });
+    try {
+      const question = await questions.retrievequestion(
+        request.params.questionID
+      );
+      const option = await options.retrieveoptions(request.params.questionID);
+      if (request.accepts("html")) {
+        response.render("questiondisplay", {
+          title: question.question,
+          description: question.description,
+          id: request.params.id,
+          questionID: request.params.questionID,
+          option,
+          csrfToken: request.csrfToken(),
+        });
+      } else {
+        return response.json({
+          option,
+        });
+      }
+    } catch (err) {
+      return response.status(422).json(err);
+    }
   }
 );
 
@@ -309,7 +360,6 @@ app.delete(
   "/deletequestion/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    //const numberofquestions= await questions.countquestions(request.params.id);
     try {
       const res = await questions.removequestion(request.params.id);
       return response.json({ success: res === 1 });

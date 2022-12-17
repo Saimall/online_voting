@@ -43,7 +43,7 @@
                 <ol class="list-decimal" type="1">
                     <% for (let i=0; i<questions.length; i++) { %>
                         <li>
-                            
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                             <div class="flex justify-between items-center w-full my-2 px-2">
                                 <div>
                                     <a href="/displayelections/correspondingquestion/<%= id %>/<%= questions[i].id %>/options" class="my-2 text-lg text-purple-600 "><%= questions[i].question %></a>

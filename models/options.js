@@ -12,6 +12,14 @@ module.exports = (sequelize, DataTypes) => {
         where: {
           questionID,
         },
+        order: [["id", "ASC"]],
+      });
+    }
+    static retriveoption(id) {
+      return this.findOne({
+        where: {
+          id,
+        },
       });
     }
     static async modifyoption(newValue, id) {
