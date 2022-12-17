@@ -520,7 +520,7 @@ app.get("/voters/listofelections/:id", async (request, response) => {
 });
 
 app.get(
-  "/voterscreate/:id",
+  "/createvoter/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     response.render("createvoter", {
