@@ -662,7 +662,7 @@ app.get(
         "launch",
         "There should be atleast two voter to lauch election"
       );
-      return response.redirect(`/listelections/${request.params.id}`);
+      return response.redirect(`/listofelections/${request.params.id}`);
     }
 
     try {
