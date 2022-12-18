@@ -10,8 +10,8 @@
     <script>
     </script>
 </head>
-    </nav>
-    <div class=" flex text-gray-800 flex-col  overflow-hidden bg-gray-50 py-6 sm:py-12 px-20">
+   <body >
+    <div class=" flex text-gray-800 flex-col  overflow-hidden bg-gray-50 py-6 sm:py-12 px-20" style="background-color: cornsilk">
         <div class="w-full">
             <center>
                 <span class="text-4xl font-light "><%= title %></span>
@@ -21,18 +21,18 @@
                     <div class="pb-2 px-8">
                         <form action="" class="divide-y divide-solid">
                             <ol class="list-decimal mb-5">
-                                <% for(let i=0; i<questions.length; i++) { %>
+                                <% for(let i=0; i<question.length; i++) { %>
                                     <li class="my-3">
                                         <div class="px-3 py-1">
-                                            <h3 class="text-3xl my-3"><%= questions[i].questionname %></h3>
-                                            <p class="text-black-800 text-md my-3"><%= questions[i].description %></p>
+                                            <h3 class="text-3xl my-3"><%= question[i].questionname %></h3>
+                                            <p class="text-black-800 text-md my-3"><%= question[i].description %></p>
                                         </div>
                                         <div class="ml-8">
                                             <ol class="list-none">
-                                                <% for(let j=0; j<options[i].length; j++) { %>
+                                                <% for(let j=0; j<optionsnew[i].length; j++) { %>
                                                         <li class="option-item mt-2 cursor-pointer">
-                                                            <input type="radio" id="<%= options[i][j].id %>" class="cursor-pointer" name="answer-<%= questions[i].id %>">
-                                                            <label class="px-1 my-2 cursor-pointer" for="<%= options[i][j].id %>" class="ml-2 text-lg "><%= options[i][j].optionname %></label>
+                                                            <input type="radio" id="<%= optionsnew[i][j].id %>" class="cursor-pointer" name="answer-<%= question[i].id %>">
+                                                            <label class="px-1 my-2 cursor-pointer" for="<%= optionsnew[i][j].id %>" class="ml-2 text-lg "><%= optionsnew[i][j].optionname %></label>
                                                         </li>
                                                 <% } %>
                                             </ol>

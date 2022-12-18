@@ -176,6 +176,7 @@ app.post(
     try {
       await Election.addElections({
         electionName: request.body.electionName,
+        publicurl: request.body.publicurl,
         adminID: request.user.id,
       });
       response.redirect("/elections");
@@ -266,6 +267,7 @@ app.get(
       const countofvoters = await Voters.countvoters(request.params.id);
       response.render("election_page", {
         election: election,
+        publicurl: election.publicurl,
         voters: voter,
         questions: question,
         id: request.params.id,
@@ -540,10 +542,12 @@ app.get("/elections/listofelections/:id", async (request, response) => {
       request.params.id,
       request.user.id
     );
+    const ele = await Election.findByPk(request.params.id);
     const countofquestions = await questions.countquestions(request.params.id);
     const countofvoters = await Voters.countvoters(request.params.id);
     response.render("election_page", {
       id: request.params.id,
+      publicurl: ele.publicurl,
       title: election.electionName,
       election: election,
       nq: countofquestions,
@@ -657,7 +661,7 @@ app.get(
     const voters = await Voters.retrivevoters(request.params.id);
     if (voters.length <= 1) {
       request.flash(
-        "launch",
+        "error",
         "There should be atleast two voter to lauch election"
       );
       return response.redirect(`/listofelections/${request.params.id}`);
@@ -699,20 +703,20 @@ app.get(
   }
 );
 
-app.get("/externalpage/:electionID", async (request, response) => {
+app.get("/externalpage/:publicurl", async (request, response) => {
   try {
-    const election = await Election.getElection(request.params.electionID);
-    if (election.running) {
-      const questions = await questions.getQuestions(request.params.electionID);
+    const election = await Election.getElectionurl(request.params.publicurl);
+    if (election.launched) {
+      const question = await questions.retrievequestions(election.id);
       let optionsnew = [];
-      for (let i = 0; i < questions.length; i++) {
-        const optionlist = await options.retrieveoptions(questions[i].id);
+      for (let i = 0; i < question.length; i++) {
+        const optionlist = await options.retrieveoptions(question[i].id);
         optionsnew.push(optionlist);
       }
       return response.render("voterview", {
         title: election.electionName,
-        electionID: request.params.electionID,
-        questions,
+        electionID: election.id,
+        question,
         optionsnew,
         csrfToken: request.csrfToken(),
       });
