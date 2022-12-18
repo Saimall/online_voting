@@ -12,6 +12,11 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
+      publicurl: {
+        type: Sequelize.STRING,
+        unique: true,
+        allowNull: false,
+      },
       electionName: {
         type: Sequelize.STRING,
       },
