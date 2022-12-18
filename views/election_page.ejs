@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <title><%= title %></title>
 </head>
-<body>
+<body style="background-color: bisque;">
 
     <%- include('heading.ejs') %>
     <div>
@@ -16,7 +16,7 @@
               Election Ended
             </div>
           <% } else if (election.launched) { %>
-            <div class="flex justify-center items-center mt-4 p-2 rounded-lg bg-blue-500 border-2 border-blue-700 gap-2 text-white font-bold">
+            <div class="flex justify-center items-center mt-4 p-2 rounded-lg  gap-2 text-blackfont-bold">
               <i class="fa fa-exclamation-triangle"></i> Election is Live
             </div>
           <% } %>
@@ -24,7 +24,7 @@
     <div class="grid grid-cols-9">
         <div class="col-start-3 col-span-3">
     <div>
-        <a href="/election/<%= election.id %>/end" class="text-white bg-red-600 hover:bg-red-800 font-medium rounded px-3 py-2"> end election</a>
+        <a href="" class="text-white bg-red-600 hover:bg-red-800 font-medium rounded px-3 py-2"> end election</a>
     </div>
         </div>
     </div>
@@ -48,6 +48,25 @@
             <a href="/election/<%= election.id %>/electionpreview" class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">Preview election</a>
                 </div>
         </div>
+        <div class="grid grid-cols-3">
+            <div class="col-start-3 col-span-2">
+        <div>
+
+            <a href="" class="text-white bg-blue-600 hover:bg-blue-800 font-medium rounded px-5 py-2">Preview Results</a>
+        </div>
+        </div>
+        </div>
+        <center>
+        <div>
+            <% if (messages && messages.error && messages.error.length > 0) { %>
+                <% for(var i=0; i<messages.error.length; i++) { %>
+                    <b>
+                    <p class="bg-black-100 my-3 list-none rounded-md px-4 py-2"><%= messages.error[i] %></p>
+                    </b>
+                <% } %>
+            <% } %>
+        </div>
+    </center>
     </div>
     
     </table>

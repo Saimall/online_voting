@@ -289,6 +289,13 @@ app.get(
     );
     const questions1 = await questions.retrievequestions(request.params.id);
     const election = await Election.findByPk(request.params.id);
+    if (election.launched) {
+      request.flash(
+        "error",
+        "Can not modify question while election is running!!"
+      );
+      return response.redirect(`/listofelections/${request.params.id}`);
+    }
     if (request.accepts("html")) {
       response.render("questions", {
         title: electionlist.electionName,
@@ -632,15 +639,15 @@ app.get(
       where: { electionID: request.params.id },
     });
     if (question.length <= 1) {
-      request.flash("launch", "please add atleast two questions!!!");
+      request.flash("error", "Please add atleast two question in the ballot!!");
       return response.redirect(`/listofelections/${request.params.id}`);
     }
 
     for (let i = 0; i < question.length; i++) {
       const option = await options.retrieveoptions(question[i].id);
-      if (option.length < 1) {
+      if (option.length <= 1) {
         request.flash(
-          "launch",
+          "error",
           "Kindly add atleast two options to the question!!!"
         );
         return response.redirect(`/listofelections/${request.params.id}`);
@@ -679,6 +686,10 @@ app.get(
     for (let i = 0; i < question.length; i++) {
       const optionlist = await options.retrieveoptions(question[i].id);
       optionsnew.push(optionlist);
+    }
+    if (election.launched) {
+      request.flash("error", "You can not preview election while Running");
+      return response.redirect(`/listofelections/${request.params.id}`);
     }
 
     response.render("electionpreview", {
