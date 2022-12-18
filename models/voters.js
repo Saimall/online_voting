@@ -20,6 +20,20 @@ module.exports = (sequelize, DataTypes) => {
         electionID: electionID,
       });
     }
+
+    static modifypassword(voterid, password) {
+      return this.update(
+        {
+          password: password,
+        },
+        {
+          where: {
+            id: voterid,
+          },
+        }
+      );
+    }
+
     static retrivevoters(electionID) {
       return this.findAll({
         where: {

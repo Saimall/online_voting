@@ -7,20 +7,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // var token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
-        // function removequestion(id) {
-        //     fetch(`/deletequestion/${id}`, {
-        //         method: "delete",
-        //         headers: {"Content-Type":"application/json"},
-        //         body: JSON.stringify({
-        //             "_csrf":token
-        //         })
-        //     }).then((res)=>{
-        //         if (res.ok) {
-        //             window.location.reload();
-        //         }
-        //     }).catch((err)=> console.error(err))
-        // }
+        var token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+        function removevoter(id) {
+            fetch(`/${id}/voterdelete`, {
+                method: "delete",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({
+                    "_csrf":token
+                })
+            }).then((res)=>{
+                if (res.ok) {
+                    window.location.reload();
+                }
+            }).catch((err)=> console.error(err))
+        }
     </script>
     <title><%= title %></title>
 </head>
@@ -28,14 +28,16 @@
     <%- include('heading.ejs') %>
             <div class="grid grid-cols-6">
                 <div class="col-start-3 col-span-2">
+                <center>
             <h5 class="text-2xl"><%= title %> list-of-Voters</h5>
+        </center>
                 </div>
             </div>
             <div class="bg-black-600 px-2 py-1 hover:bgblack-600">
                 <a href="/createvoter/<%=id%>" class="text-black-600">Add a new Voter</a>
             </div>
             <div class="bg-black-600 px-2 py-1 hover:bgblack-600">
-                <a href="listofelections/<%=id%>" class="text-black-600">Question Page</a>
+                <a href="listofelections/<%=id%>" class="text-black-600">GO BACK</a>
             </div>
         </div>
         <div class="flex-auto">
@@ -49,18 +51,18 @@
                             
                             <div class="flex justify-between items-center w-full my-2 px-2">
                                 <div>
-                                    <a href="" class="my-2 text-lg text-purple-600 "><%= voters[i].voterid %></a>
+                                    <a href="" class="my-2 text-lg text-black-600 "><%= voters[i].voterid %></a>
                     
                     
                                 </div>
                                 <div class="flex gap-2 text-600" align="center">
                                     <div class="rounded w-fit px-2 py-1 flex gap-2 cursor-pointer hover:text-600">
         
-                                        <a href="" class="text-sm"></a>
+                                        <a href="/elections/<%=election.id%>/voter/<%=voters[i].id%>/edit" class="text-sm">edit passowrd</a>
                                     </div>
                                      <% if((voters.length) >1) {%> 
                                     <div class="rounded w-fit px-2 py-1 flex gap-2 cursor-pointer hover:text-600">    
-                                        <a onclick="removequestion(<%= voters[i].id %>)" class="text-sm"></a>
+                                        <a onclick="removevoter(<%= voters[i].id %>)" class="text-sm">delete voter</a>
                                          <%} %>
                                        
                                     </div>

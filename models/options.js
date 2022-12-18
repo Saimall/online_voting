@@ -22,8 +22,8 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
-    static async modifyoption(newValue, id) {
-      return options.update(
+    static modifyoption(newValue, id) {
+      return this.update(
         {
           optionname: newValue,
         },

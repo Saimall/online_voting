@@ -519,6 +519,26 @@ app.get("/voters/listofelections/:id", async (request, response) => {
   }
 });
 
+app.get("/elections/listofelections/:id", async (request, response) => {
+  try {
+    const electionname = await Election.getElections(
+      request.params.id,
+      request.user.id
+    );
+    const countofquestions = await questions.countquestions(request.params.id);
+    const countofvoters = await Voters.countvoters(request.params.id);
+    response.render("election_page", {
+      id: request.params.id,
+      title: electionname.electionName,
+      nq: countofquestions,
+      nv: countofvoters,
+    });
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+
 app.get(
   "/createvoter/:id",
   connectEnsureLogin.ensureLoggedIn(),
@@ -538,6 +558,51 @@ app.post(
     try {
       await Voters.add(request.body.voterid, hashedPwd, request.params.id);
       return response.redirect(`/voters/${request.params.id}`);
+    } catch (error) {
+      console.log(error);
+      return response.status(422).json(error);
+    }
+  }
+);
+
+app.get(
+  "/elections/:electionID/voter/:voterID/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const election = await Election.findByPk(request.params.electionID);
+    const voter = await Voters.findByPk(request.params.voterID);
+    response.render("modifyvoters", {
+      election: election,
+      voter: voter,
+      csrf: request.csrfToken(),
+    });
+  }
+);
+
+app.post(
+  "/elections/:electionID/voter/:voterID/modify",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    try {
+      await Voters.modifypassword(
+        request.params.voterID,
+        request.body.password
+      );
+      response.redirect(`/voters/${request.params.electionID}`);
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+  }
+);
+
+app.delete(
+  "/:id/voterdelete",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    try {
+      const res = await Voters.delete(request.params.id);
+      return response.json({ success: res === 1 });
     } catch (error) {
       console.log(error);
       return response.status(422).json(error);

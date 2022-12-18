@@ -11,6 +11,7 @@ module.exports = {
       },
       voterid: {
         type: Sequelize.STRING,
+        unique: true,
       },
       voted: {
         type: Sequelize.BOOLEAN,
