@@ -543,10 +543,15 @@ app.get(
   "/createvoter/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    response.render("createvoter", {
-      id: request.params.id,
-      csrfToken: request.csrfToken(),
-    });
+    const voterslist = await Voters.retrivevoters(request.params.id);
+    if (request.accepts("html")) {
+      response.render("createvoter", {
+        id: request.params.id,
+        csrfToken: request.csrfToken({ voterslist }),
+      });
+    } else {
+      return response.json({ voterslist });
+    }
   }
 );
 
