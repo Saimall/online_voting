@@ -73,6 +73,7 @@ describe("Online election test suite ", function () {
     const csrfToken = extractCsrfToken(res);
     const response = await agent.post("/elections").send({
       electionName: "sai1",
+      publicurl: "url1",
       _csrf: csrfToken,
     });
     expect(response.statusCode).toBe(302);
@@ -86,6 +87,7 @@ describe("Online election test suite ", function () {
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
       electionName: "Test election",
+      publicurl: "url2",
       _csrf: csrfToken,
     });
     const groupedResponse = await agent
@@ -115,6 +117,7 @@ describe("Online election test suite ", function () {
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
       electionName: "CR",
+      publicurl: "url3",
       _csrf: csrfToken,
     });
     const ElectionsResponse = await agent
@@ -179,6 +182,7 @@ describe("Online election test suite ", function () {
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
       electionName: "CR Election",
+      publicurl: "url4",
       _csrf: csrfToken,
     });
     const groupedResponse = await agent
@@ -229,6 +233,7 @@ describe("Online election test suite ", function () {
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
       electionName: "test election",
+      publicurl: "url6",
       _csrf: csrfToken,
     });
     const ElectionsResponse = await agent
@@ -279,6 +284,7 @@ describe("Online election test suite ", function () {
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
       electionName: "Election",
+      publicurl: "url7",
       _csrf: csrfToken,
     });
     const ElectionsResponse = await agent
@@ -360,6 +366,7 @@ describe("Online election test suite ", function () {
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
       electionName: "election 3",
+      publicurl: "url7",
       _csrf: csrfToken,
     });
     const ElectionsResponse = await agent
@@ -431,6 +438,7 @@ describe("Online election test suite ", function () {
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
       electionName: "Test election",
+      publicurl: "url8",
       _csrf: csrfToken,
     });
     const groupedResponse = await agent
@@ -458,6 +466,7 @@ describe("Online election test suite ", function () {
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
       electionName: "Test election",
+      publicurl: "url9",
       _csrf: csrfToken,
     });
     const groupedResponse = await agent
@@ -485,6 +494,7 @@ describe("Online election test suite ", function () {
     let csrfToken = extractCsrfToken(res);
     await agent.post("/elections").send({
       electionName: "Election",
+      publicurl: "url10",
       _csrf: csrfToken,
     });
     const ElectionsResponse = await agent
@@ -523,4 +533,177 @@ describe("Online election test suite ", function () {
     const parseddeleteResponse = JSON.parse(deleteresponse.text);
     expect(parseddeleteResponse.success).toBe(true);
   });
+
+  test("testing launching and prevewing of election", async () => {
+    const agent = request.agent(server);
+    await login(agent, "sai1@test.com", "12345678");
+
+    let res = await agent.get("/create");
+    let csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "Election1",
+      publicurl: "url11",
+      _csrf: csrfToken,
+    });
+    const ElectionsResponse = await agent
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedElectionsResponse = JSON.parse(ElectionsResponse.text);
+    const electionCount = parsedElectionsResponse.elections_list.length;
+    const latestElection =
+      parsedElectionsResponse.elections_list[electionCount - 1];
+
+    res = await agent.get(`/election/${latestElection.id}/electionpreview`);
+    csrfToken = extractCsrfToken(res);
+    expect(res.statusCode).toBe(200);
+  });
+
+  // test("testing launching of an election", async () => {
+  //   const agent = request.agent(server);
+  //   await login(agent,"sai1@test.com","12");
+  //   //create new election
+  //   let res = await agent.get("/create");
+  //   let csrfToken = extractCsrfToken(res);
+  //   await agent.post("/elections").send({
+  //     electionName: "Testelection",
+  //     publicurl: "urp12",
+  //     _csrf: csrfToken,
+  //   });
+  //   const groupedElectionsResponse = await agent
+  //     .get("/elections")
+  //     .set("Accept", "application/json");
+  //     console.log(groupedElectionsResponse.text)
+  //   const parsedGroupedResponse = JSON.parse(groupedElectionsResponse.text);
+  //   const electionCount = parsedGroupedResponse.elections_list.length;
+  //   const latestElection = parsedGroupedResponse.elections_list[electionCount - 1];
+
+  //   //add a question
+  //   res = await agent.get(`questionscreate/${latestElection.id}/`);
+  //   csrfToken = extractCsrfToken(res);
+  //   await agent.post(`/questionscreate/${latestElection.id}`).send({
+  //     question: "Test question",
+  //     description: "Test description",
+  //     _csrf: csrfToken,
+  //   });
+
+  //   const groupedQuestionsResponse = await agent
+  //     .get(`/questions/${latestElection.id}`)
+  //     .set("Accept", "application/json");
+  //   const parsedQuestionsGroupedResponse = JSON.parse(
+  //     groupedQuestionsResponse.text
+  //   );
+  //   const questionCount = parsedQuestionsGroupedResponse.questions.length;
+  //   const latestQuestion =
+  //     parsedQuestionsGroupedResponse.questions[questionCount - 1];
+
+  //   //adding option 1
+  //   res = await agent.get(
+  //     `/displayelections/correspodingquestions${latestElection.id}/${latestQuestion.id}`
+  //   );
+  //   csrfToken = extractCsrfToken(res);
+  //   res = await agent
+  //     .post(`/displayelections/correspodingquestions${latestElection.id}/${latestQuestion.id}`)
+  //     .send({
+  //       _csrf: csrfToken,
+  //       option: "Test option",
+  //     });
+
+  //   //adding option 2
+  //   res = await agent.get(
+  //     `/displayelections/correspodingquestions${latestElection.id}/${latestQuestion.id}`
+  //   );
+  //   csrfToken = extractCsrfToken(res);
+  //   res = await agent
+  //     .post(`/displayelections/correspodingquestions${latestElection.id}/${latestQuestion.id}`)
+  //     .send({
+  //       _csrf: csrfToken,
+  //       option: "Test option",
+  //     });
+
+  //   res = await agent.get(`/election/${latestElection.id}/electionpreview`);
+  //   csrfToken = extractCsrfToken(res);
+
+  //   expect(latestElection.running).toBe(false);
+  //   res = await agent.get(`/election/${latestElection.id}/launch`).send({
+  //     _csrf: csrfToken,
+  //   });
+  //   const launchedElectionRes = JSON.parse(res.text);
+  //   expect(launchedElectionRes[1][0].launched).toBe(true);
+
+  //   res = await agent.get(`/externalpage/${latestElection.publicurl}`);
+  //   expect(res.statusCode).toBe(200);
+  // });
+
+  // test("testing of editing is not possible after launching", async () => {
+  //   const agent = request.agent(server);
+  //   await login(agent, "sai1@gmail.com", "12345678");
+
+  //   let res = await agent.get("/create");
+  //   let csrfToken = extractCsrfToken(res);
+  //   await agent.post("/elections").send({
+  //     electionName: "election",
+  //     publicurl: "url13",
+  //     _csrf: csrfToken,
+  //   });
+  //   const groupedResponse = await agent
+  //     .get("/elections")
+  //     .set("Accept", "application/json");
+  //   const parsedGroupedResponse = JSON.parse(groupedResponse.text);
+  //   const electionCount = parsedGroupedResponse.elections_list.length;
+  //   const latestelection = parsedGroupedResponse.elections_list[electionCount - 1];
+
+  //   res = await agent.get(`/questionscreate/${latestelection.id}`);
+  //   csrfToken = extractCsrfToken(res);
+  //   await agent.post(`/questionscreate/${latestelection.id}`).send({
+  //     question: "CR",
+  //     description: "above 18",
+  //     _csrf: csrfToken,
+  //   });
+
+  //   const groupedQuestionsResponse = await agent
+  //     .get(`/questions/${latestElection.id}`)
+  //     .set("Accept", "application/json");
+  //   const parsedQuestionsGroupedResponse = JSON.parse(
+  //     groupedQuestionsResponse.text
+  //   );
+  //   const questionCount = parsedQuestionsGroupedResponse.questions1.length;
+  //   const latestQuestion =
+  //     parsedQuestionsGroupedResponse.questions1[questionCount - 1];
+
+  //   res = await agent.get(
+  //     `/displayelections/correspondingquestion/${latestElection.id}/${latestQuestion.id}`
+  //   );
+  //   csrfToken = extractCsrfToken(res);
+  //   res = await agent
+  //     .post(`/displayelections/correspondingquestion/${latestElection.id}/${latestQuestion.id}`)
+  //     .send({
+  //       _csrf: csrfToken,
+  //       option: "option 12",
+  //     });
+
+  //   res = await agent.get(
+  //     `/displayelections/correspondingquestion/${latestElection.id}/${latestQuestion.id}`
+  //   );
+  //   csrfToken = extractCsrfToken(res);
+  //   res = await agent
+  //     .post(`/displayelections/correspondingquestion/${latestElection.id}/${latestQuestion.id}`)
+  //     .send({
+  //       _csrf: csrfToken,
+  //       option: "option12",
+  //     });
+
+  //   res = await agent.get(`/questions/${latestElection.id}`);
+  //   expect(res.statusCode).toBe(200);
+
+  //   res = await agent.get(`/elections/${latestElection.id}/electionpreview`);
+  //   csrfToken = extractCsrfToken(res);
+  //   res = await agent.put(`/elections/${latestElection.id}/launch`).send({
+  //     _csrf: csrfToken,
+  //   });
+  //   const launchedElectionRes = JSON.parse(res.text);
+  //   expect(launchedElectionRes[1][0].running).toBe(true);
+
+  //   res = await agent.get(`/questions/${latestElection.id}`);
+  //   expect(res.statusCode).toBe(302);
+  // });
 });
