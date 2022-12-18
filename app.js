@@ -253,6 +253,9 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     try {
+      const voter = await Voters.retrivevoters(request.params.id);
+      const question = await questions.retrievequestion(request.params.id);
+      const election = await Election.findByPk(request.params.id);
       const electionname = await Election.getElections(
         request.params.id,
         request.user.id
@@ -262,6 +265,9 @@ app.get(
       );
       const countofvoters = await Voters.countvoters(request.params.id);
       response.render("election_page", {
+        election: election,
+        voters: voter,
+        questions: question,
         id: request.params.id,
         title: electionname.electionName,
         nq: countofquestions,
@@ -507,7 +513,9 @@ app.get("/voters/listofelections/:id", async (request, response) => {
     );
     const countofquestions = await questions.countquestions(request.params.id);
     const countofvoters = await Voters.countvoters(request.params.id);
+    const election = await Election.findByPk(request.params.id);
     response.render("election_page", {
+      election: election,
       id: request.params.id,
       title: electionname.electionName,
       nq: countofquestions,
@@ -521,7 +529,7 @@ app.get("/voters/listofelections/:id", async (request, response) => {
 
 app.get("/elections/listofelections/:id", async (request, response) => {
   try {
-    const electionname = await Election.getElections(
+    const election = await Election.getElections(
       request.params.id,
       request.user.id
     );
@@ -529,7 +537,8 @@ app.get("/elections/listofelections/:id", async (request, response) => {
     const countofvoters = await Voters.countvoters(request.params.id);
     response.render("election_page", {
       id: request.params.id,
-      title: electionname.electionName,
+      title: election.electionName,
+      election: election,
       nq: countofquestions,
       nv: countofvoters,
     });
@@ -612,6 +621,72 @@ app.delete(
       console.log(error);
       return response.status(422).json(error);
     }
+  }
+);
+
+app.get(
+  "/election/:id/launch",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const question = await questions.findAll({
+      where: { electionID: request.params.id },
+    });
+    if (question.length <= 1) {
+      request.flash("launch", "please add atleast two questions!!!");
+      return response.redirect(`/listofelections/${request.params.id}`);
+    }
+
+    for (let i = 0; i < question.length; i++) {
+      const option = await options.retrieveoptions(question[i].id);
+      if (option.length < 1) {
+        request.flash(
+          "launch",
+          "Kindly add atleast two options to the question!!!"
+        );
+        return response.redirect(`/listofelections/${request.params.id}`);
+      }
+    }
+
+    const voters = await Voters.findAll({
+      where: { electionID: request.params.id },
+    });
+    if (voters.length <= 1) {
+      request.flash(
+        "launch",
+        "There should be atleast two voter to lauch election"
+      );
+      return response.redirect(`/listelections/${request.params.id}`);
+    }
+
+    try {
+      await Election.launch(request.params.id);
+      return response.redirect(`/listofelections/${request.params.id}`);
+    } catch (error) {
+      console.log(error);
+      return response.send(error);
+    }
+  }
+);
+
+app.get(
+  "/election/:id/electionpreview",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const election = await Election.findByPk(request.params.id);
+    const optionsnew = [];
+    const question = await questions.retrievequestions(request.params.id);
+
+    for (let i = 0; i < question.length; i++) {
+      const optionlist = await options.retrieveoptions(question[i].id);
+      optionsnew.push(optionlist);
+    }
+
+    response.render("electionpreview", {
+      election: election,
+      questions: question,
+      options: optionsnew,
+      csrf: request.csrfToken(),
+    });
   }
 );
 module.exports = app;

@@ -13,6 +13,15 @@ module.exports = (sequelize, DataTypes) => {
         adminID,
       });
     }
+
+    static getElection(adminID) {
+      return this.findOne({
+        where: {
+          adminID,
+        },
+        order: [["id", "ASC"]],
+      });
+    }
     static getElections(adminID) {
       return this.findAll({
         where: {
@@ -21,6 +30,32 @@ module.exports = (sequelize, DataTypes) => {
         order: [["id", "ASC"]],
       });
     }
+
+    static launch(id) {
+      return this.update(
+        {
+          launched: true,
+        },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
+    }
+    static end(id) {
+      return this.Election.update(
+        {
+          ended: true,
+        },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
+    }
+
     static associate(models) {
       // define association here
       Election.belongsTo(models.Admin, {
@@ -37,6 +72,8 @@ module.exports = (sequelize, DataTypes) => {
   Election.init(
     {
       electionName: DataTypes.STRING,
+      launched: DataTypes.BOOLEAN,
+      ended: DataTypes.BOOLEAN,
     },
     {
       sequelize,
