@@ -654,9 +654,7 @@ app.get(
       }
     }
 
-    const voters = await Voters.findAll({
-      where: { electionID: request.params.id },
-    });
+    const voters = await Voters.retrivevoters(request.params.id);
     if (voters.length <= 1) {
       request.flash(
         "launch",
