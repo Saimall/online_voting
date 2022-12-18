@@ -700,4 +700,30 @@ app.get(
     });
   }
 );
+
+app.get("/externalpage/:electionID", async (request, response) => {
+  try {
+    const election = await Election.getElection(request.params.electionID);
+    if (election.running) {
+      const questions = await questions.getQuestions(request.params.electionID);
+      let optionsnew = [];
+      for (let i = 0; i < questions.length; i++) {
+        const optionlist = await options.retrieveoptions(questions[i].id);
+        optionsnew.push(optionlist);
+      }
+      return response.render("voterview", {
+        title: election.electionName,
+        electionID: request.params.electionID,
+        questions,
+        optionsnew,
+        csrfToken: request.csrfToken(),
+      });
+    } else {
+      return response.render("404");
+    }
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
 module.exports = app;

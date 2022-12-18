@@ -12,12 +12,12 @@
     <%- include('heading.ejs') %>
     <div>
         <% if (election.ended) { %>
-            <div class="flex justify-center items-center mt-4 p-2   gap-2 text-white font-bold">
+            <div class="flex justify-center items-center mt-4 p-2 gap-2 text-blackfont-bold">
               Election Ended
             </div>
           <% } else if (election.launched) { %>
-            <div class="flex justify-center items-center mt-4 p-2 rounded-lg  gap-2 text-blackfont-bold">
-              <i class="fa fa-exclamation-triangle"></i> Election is Live
+            <div class="flex justify-center items-center mt-4 p-2 gap-2 text-blackfont-bold">
+               Election is Live
             </div>
           <% } %>
     </div>
