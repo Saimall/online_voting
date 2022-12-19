@@ -45,7 +45,7 @@ describe("Online election test suite ", function () {
     res = await agent.post("/admin").send({
       firstName: "mallik",
       lastName: "sai",
-      email: "sai1@test.com",
+      email: "sai@test.com",
       password: "12345678",
       _csrf: csrfToken,
     });
@@ -68,7 +68,7 @@ describe("Online election test suite ", function () {
 
   test("testing creating a election", async () => {
     const agent = request.agent(server);
-    await login(agent, "sai1@test.com", "12345678");
+    await login(agent, "sai@test.com", "12345678");
     const res = await agent.get("/create");
     const csrfToken = extractCsrfToken(res);
     const response = await agent.post("/elections").send({
@@ -81,7 +81,7 @@ describe("Online election test suite ", function () {
 
   test("testing adding a question", async () => {
     const agent = request.agent(server);
-    await login(agent, "sai1@test.com", "12345678");
+    await login(agent, "sai@test.com", "12345678");
 
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
@@ -111,7 +111,7 @@ describe("Online election test suite ", function () {
 
   test("testing deleting a question", async () => {
     const agent = request.agent(server);
-    await login(agent, "sai1@test.com", "12345678");
+    await login(agent, "sai@test.com", "12345678");
 
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
@@ -176,7 +176,7 @@ describe("Online election test suite ", function () {
 
   test("testing updating a question", async () => {
     const agent = request.agent(server);
-    await login(agent, "sai1@test.com", "12345678");
+    await login(agent, "sai@test.com", "12345678");
 
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
@@ -227,7 +227,7 @@ describe("Online election test suite ", function () {
 
   test("testing adding a option", async () => {
     const agent = request.agent(server);
-    await login(agent, "sai1@test.com", "12345678");
+    await login(agent, "sai@test.com", "12345678");
 
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
@@ -278,7 +278,7 @@ describe("Online election test suite ", function () {
 
   test("testing deleting a option", async () => {
     const agent = request.agent(server);
-    await login(agent, "sai1@test.com", "12345678");
+    await login(agent, "sai@test.com", "12345678");
 
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
@@ -360,7 +360,7 @@ describe("Online election test suite ", function () {
 
   test("testing updating a option", async () => {
     const agent = request.agent(server);
-    await login(agent, "sai1@test.com", "12345678");
+    await login(agent, "sai@test.com", "12345678");
 
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
@@ -432,7 +432,7 @@ describe("Online election test suite ", function () {
   });
   test("testing adding of voters", async () => {
     const agent = request.agent(server);
-    await login(agent, "sai1@test.com", "12345678");
+    await login(agent, "sai@test.com", "12345678");
 
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
@@ -460,7 +460,7 @@ describe("Online election test suite ", function () {
 
   test("testing adding a voter", async () => {
     const agent = request.agent(server);
-    await login(agent, "sai1@test.com", "12345678");
+    await login(agent, "sai@test.com", "12345678");
 
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
@@ -488,7 +488,7 @@ describe("Online election test suite ", function () {
 
   test("testing deleting a voter", async () => {
     const agent = request.agent(server);
-    await login(agent, "sai1@test.com", "12345678");
+    await login(agent, "sai@test.com", "12345678");
 
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
@@ -534,9 +534,9 @@ describe("Online election test suite ", function () {
     expect(parseddeleteResponse.success).toBe(true);
   });
 
-  test("testing launching and prevewing of election", async () => {
+  test("testing prevewing of election", async () => {
     const agent = request.agent(server);
-    await login(agent, "sai1@test.com", "12345678");
+    await login(agent, "sai@test.com", "12345678");
 
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
@@ -558,152 +558,32 @@ describe("Online election test suite ", function () {
     expect(res.statusCode).toBe(200);
   });
 
-  // test("testing launching of an election", async () => {
-  //   const agent = request.agent(server);
-  //   await login(agent,"sai1@test.com","12");
-  //   //create new election
-  //   let res = await agent.get("/create");
-  //   let csrfToken = extractCsrfToken(res);
-  //   await agent.post("/elections").send({
-  //     electionName: "Testelection",
-  //     publicurl: "urp12",
-  //     _csrf: csrfToken,
-  //   });
-  //   const groupedElectionsResponse = await agent
-  //     .get("/elections")
-  //     .set("Accept", "application/json");
-  //     console.log(groupedElectionsResponse.text)
-  //   const parsedGroupedResponse = JSON.parse(groupedElectionsResponse.text);
-  //   const electionCount = parsedGroupedResponse.elections_list.length;
-  //   const latestElection = parsedGroupedResponse.elections_list[electionCount - 1];
+  test("testing the launching of an election", async () => {
+    const agent = request.agent(server);
+    await login(agent, "sai@test.com", "12345678");
 
-  //   //add a question
-  //   res = await agent.get(`questionscreate/${latestElection.id}/`);
-  //   csrfToken = extractCsrfToken(res);
-  //   await agent.post(`/questionscreate/${latestElection.id}`).send({
-  //     question: "Test question",
-  //     description: "Test description",
-  //     _csrf: csrfToken,
-  //   });
+    res = await agent.get("/create");
+    csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "Election1",
+      publicurl: "url11",
+      _csrf: csrfToken,
+    });
+    const ElectionsResponse = await agent
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedElectionsResponse = JSON.parse(ElectionsResponse.text);
+    const electionCount = parsedElectionsResponse.elections_list.length;
+    const electionlist =
+      parsedElectionsResponse.elections_list[electionCount - 1];
 
-  //   const groupedQuestionsResponse = await agent
-  //     .get(`/questions/${latestElection.id}`)
-  //     .set("Accept", "application/json");
-  //   const parsedQuestionsGroupedResponse = JSON.parse(
-  //     groupedQuestionsResponse.text
-  //   );
-  //   const questionCount = parsedQuestionsGroupedResponse.questions.length;
-  //   const latestQuestion =
-  //     parsedQuestionsGroupedResponse.questions[questionCount - 1];
+    res = await agent.get(`/listofelections/${electionlist.id}`);
+    const token = extractCsrfToken(res);
 
-  //   //adding option 1
-  //   res = await agent.get(
-  //     `/displayelections/correspodingquestions${latestElection.id}/${latestQuestion.id}`
-  //   );
-  //   csrfToken = extractCsrfToken(res);
-  //   res = await agent
-  //     .post(`/displayelections/correspodingquestions${latestElection.id}/${latestQuestion.id}`)
-  //     .send({
-  //       _csrf: csrfToken,
-  //       option: "Test option",
-  //     });
+    const result = await agent.get(`/election/${electionlist.id}/launch`).send({
+      _csrf: token,
+    });
 
-  //   //adding option 2
-  //   res = await agent.get(
-  //     `/displayelections/correspodingquestions${latestElection.id}/${latestQuestion.id}`
-  //   );
-  //   csrfToken = extractCsrfToken(res);
-  //   res = await agent
-  //     .post(`/displayelections/correspodingquestions${latestElection.id}/${latestQuestion.id}`)
-  //     .send({
-  //       _csrf: csrfToken,
-  //       option: "Test option",
-  //     });
-
-  //   res = await agent.get(`/election/${latestElection.id}/electionpreview`);
-  //   csrfToken = extractCsrfToken(res);
-
-  //   expect(latestElection.running).toBe(false);
-  //   res = await agent.get(`/election/${latestElection.id}/launch`).send({
-  //     _csrf: csrfToken,
-  //   });
-  //   const launchedElectionRes = JSON.parse(res.text);
-  //   expect(launchedElectionRes[1][0].launched).toBe(true);
-
-  //   res = await agent.get(`/externalpage/${latestElection.publicurl}`);
-  //   expect(res.statusCode).toBe(200);
-  // });
-
-  // test("testing of editing is not possible after launching", async () => {
-  //   const agent = request.agent(server);
-  //   await login(agent, "sai1@gmail.com", "12345678");
-
-  //   let res = await agent.get("/create");
-  //   let csrfToken = extractCsrfToken(res);
-  //   await agent.post("/elections").send({
-  //     electionName: "election",
-  //     publicurl: "url13",
-  //     _csrf: csrfToken,
-  //   });
-  //   const groupedResponse = await agent
-  //     .get("/elections")
-  //     .set("Accept", "application/json");
-  //   const parsedGroupedResponse = JSON.parse(groupedResponse.text);
-  //   const electionCount = parsedGroupedResponse.elections_list.length;
-  //   const latestelection = parsedGroupedResponse.elections_list[electionCount - 1];
-
-  //   res = await agent.get(`/questionscreate/${latestelection.id}`);
-  //   csrfToken = extractCsrfToken(res);
-  //   await agent.post(`/questionscreate/${latestelection.id}`).send({
-  //     question: "CR",
-  //     description: "above 18",
-  //     _csrf: csrfToken,
-  //   });
-
-  //   const groupedQuestionsResponse = await agent
-  //     .get(`/questions/${latestElection.id}`)
-  //     .set("Accept", "application/json");
-  //   const parsedQuestionsGroupedResponse = JSON.parse(
-  //     groupedQuestionsResponse.text
-  //   );
-  //   const questionCount = parsedQuestionsGroupedResponse.questions1.length;
-  //   const latestQuestion =
-  //     parsedQuestionsGroupedResponse.questions1[questionCount - 1];
-
-  //   res = await agent.get(
-  //     `/displayelections/correspondingquestion/${latestElection.id}/${latestQuestion.id}`
-  //   );
-  //   csrfToken = extractCsrfToken(res);
-  //   res = await agent
-  //     .post(`/displayelections/correspondingquestion/${latestElection.id}/${latestQuestion.id}`)
-  //     .send({
-  //       _csrf: csrfToken,
-  //       option: "option 12",
-  //     });
-
-  //   res = await agent.get(
-  //     `/displayelections/correspondingquestion/${latestElection.id}/${latestQuestion.id}`
-  //   );
-  //   csrfToken = extractCsrfToken(res);
-  //   res = await agent
-  //     .post(`/displayelections/correspondingquestion/${latestElection.id}/${latestQuestion.id}`)
-  //     .send({
-  //       _csrf: csrfToken,
-  //       option: "option12",
-  //     });
-
-  //   res = await agent.get(`/questions/${latestElection.id}`);
-  //   expect(res.statusCode).toBe(200);
-
-  //   res = await agent.get(`/elections/${latestElection.id}/electionpreview`);
-  //   csrfToken = extractCsrfToken(res);
-  //   res = await agent.put(`/elections/${latestElection.id}/launch`).send({
-  //     _csrf: csrfToken,
-  //   });
-  //   const launchedElectionRes = JSON.parse(res.text);
-  //   expect(launchedElectionRes[1][0].running).toBe(true);
-
-  //   res = await agent.get(`/questions/${latestElection.id}`);
-  //   expect(res.statusCode).toBe(302);
-  // });
+    expect(result.statusCode).toBe(302);
+  });
 });
