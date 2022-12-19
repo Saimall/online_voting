@@ -721,7 +721,7 @@ app.get("/externalpage/:publicurl", async (request, response) => {
         csrfToken: request.csrfToken(),
       });
     } else {
-      return response.render("404");
+      return response.render("invalid");
     }
   } catch (error) {
     console.log(error);
