@@ -21,7 +21,7 @@
             </div>
             <div>
             <b> Voter can visit this link to cast their Vote :</b>
-            <a href="/externalpage/<%=publicurl%>" class="py-1 hover:text-purple-blue text-blue-600">localhost:7000/externalpage/<%=publicurl%></a>
+            <a href="/externalpage/<%=publicurl%>" class="py-1 hover:text-purple-blue text-blue-600">https://online-voting.onrender.com/externalpage/<%=publicurl%></a>
         </div>
             <% } %>
     </div>
@@ -33,11 +33,11 @@
         <div class="col-start-3 col-span-2">
         <h3 class="text-4xl my-4 font-medium"><%= title %></h3>
         <div class="my-8">
-            <h2 class="my-2 text-lg text-black flex gap-1">your election has <span class="text-black-600"> <%= nq %> </span> questions</h2>
+            <h2 class="my-2 text-lg text-black flex gap-1">your election has <span class="text-black-600"> <%= countquestions %> </span> questions</h2>
             <a href="/questions/<%= id %>" class="py-1 hover:text-black-800 text-black-600">Manage questions</a>
         </div>
         <div class="my-8">
-            <h2 class="my-2 text-lg text-black flex gap-1">your election has <span class="text-black-600"> <%= nv %> </span>  voters.</h2>
+            <h2 class="my-2 text-lg text-black flex gap-1">your election has <span class="text-black-600"> <%= countvoters %> </span>  voters.</h2>
             <a href="/voters/<%=id %>" class="py-1 hover:text-black-800 text-black-600">Manage voters</a>
         </div>
         <div>
