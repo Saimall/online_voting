@@ -69,9 +69,9 @@ passport.use(
       passwordField: "password",
       passReqToCallback: true,
     },
-    (request, username, password, done) => {
+    (request, voterID, password, done) => {
       Voters.findOne({
-        where: { voterID: username, electionID: request.params.id },
+        where: { voterID: voterID, electionID: request.params.id },
       })
         .then(async (voter) => {
           const result = await bcrypt.compare(password, voter.password);
@@ -84,7 +84,7 @@ passport.use(
         .catch((error) => {
           console.log(error);
           return done(null, false, {
-            message: "This voter is not registered",
+            message: "invalid",
           });
         });
     }
@@ -524,6 +524,7 @@ app.get("/voters/listofelections/:id", async (request, response) => {
     const countofvoters = await Voters.countvoters(request.params.id);
     const election = await Election.findByPk(request.params.id);
     response.render("election_page", {
+      publicurl: election.publicurl,
       election: election,
       id: request.params.id,
       title: electionname.electionName,
@@ -550,8 +551,8 @@ app.get("/elections/listofelections/:id", async (request, response) => {
       publicurl: ele.publicurl,
       title: election.electionName,
       election: election,
-      nq: countofquestions,
-      nv: countofvoters,
+      countquestions: countofquestions,
+      countvoters: countofvoters,
     });
   } catch (error) {
     console.log(error);
@@ -703,29 +704,77 @@ app.get(
   }
 );
 
-app.get("/externalpage/:publicurl", async (request, response) => {
-  try {
-    const election = await Election.getElectionurl(request.params.publicurl);
-    if (election.launched) {
-      const question = await questions.retrievequestions(election.id);
-      let optionsnew = [];
-      for (let i = 0; i < question.length; i++) {
-        const optionlist = await options.retrieveoptions(question[i].id);
-        optionsnew.push(optionlist);
+app.get(
+  "/externalpage/:publicurl",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    try {
+      const election = await Election.getElectionurl(request.params.publicurl);
+      if (election.launched) {
+        const question = await questions.retrievequestions(election.id);
+        let optionsnew = [];
+        for (let i = 0; i < question.length; i++) {
+          const optionlist = await options.retrieveoptions(question[i].id);
+          optionsnew.push(optionlist);
+        }
+        return response.render("voterlogin", {
+          id: election.id,
+          title: election.electionName,
+          electionID: election.id,
+          question,
+          optionsnew,
+          csrfToken: request.csrfToken(),
+        });
+      } else {
+        return response.render("invalid");
       }
-      return response.render("voterview", {
-        title: election.electionName,
-        electionID: election.id,
-        question,
-        optionsnew,
-        csrfToken: request.csrfToken(),
-      });
-    } else {
-      return response.render("invalid");
+    } catch (error) {
+      console.log(error);
+      return response.status(422).json(error);
     }
-  } catch (error) {
-    console.log(error);
-    return response.status(422).json(error);
   }
-});
+);
+
+app.get(
+  "/vote/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    try {
+      const election = await Election.getElectionurl(request.params.id);
+      if (election.launched) {
+        const question = await questions.retrievequestions(election.id);
+        let optionsnew = [];
+        for (let i = 0; i < question.length; i++) {
+          const optionlist = await options.retrieveoptions(question[i].id);
+          optionsnew.push(optionlist);
+        }
+
+        return response.render("voterview", {
+          id: election.id,
+          title: election.electionName,
+          electionID: election.id,
+          question,
+          optionsnew,
+          csrfToken: request.csrfToken(),
+        });
+      } else {
+        return response.render("invalid");
+      }
+    } catch (error) {
+      console.log(error);
+      return response.status(422).json(error);
+    }
+  }
+);
+
+app.post(
+  "/vote/:id",
+  passport.authenticate("voter-local", {
+    failureRedirect: "back",
+    failureFlash: true,
+  }),
+  function (request, response) {
+    return response.redirect(`/vote/${request.params.id}`);
+  }
+);
 module.exports = app;

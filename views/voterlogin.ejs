@@ -8,16 +8,16 @@
     <title><%= title %></title>
 </head>
 <body>
-    <div class="relative flex min-h-screen text-gray-800 antialiased flex-col justify-center overflow-hidden bg-gray-50 py-6 sm:py-12" style="background-color: bisque;">
+    <div class="relative flex min-h-screen text-gray-800 antialiased flex-col justify-center overflow-hidden bg-gray-50 py-6 sm:py-12" style="background-color: lightblue;">
         <div class="relative py-3  mx-auto text-center">
             <b>
-            <span class="text-2xl font-light ">Login to your account</span>
+            <span class="text-2xl font-light ">Login To Caste Vote</span>
         </b>
             <div>
             </div>
             <div class="mt-4 bg-white shadow-md rounded-lg text-left" style="background-color: cornsilk;">
     
-                <form action="/" method="post" class="px-8 py-6">
+                <form action="/vote/<%=id%>" method="post" class="px-8 py-6">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                     <div>
                     <label for="voterid"  class="border border-gray-300 text-gray-900 rounded ">VoterID</label>
