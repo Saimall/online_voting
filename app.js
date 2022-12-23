@@ -527,8 +527,8 @@ app.get("/voters/listofelections/:id", async (request, response) => {
       election: election,
       id: request.params.id,
       title: electionname.electionName,
-      nq: countofquestions,
-      nv: countofvoters,
+      countquestions: countofquestions,
+      countvoters: countofvoters,
     });
   } catch (error) {
     console.log(error);
