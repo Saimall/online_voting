@@ -734,7 +734,6 @@ app.get(
     }
   }
 );
-
 app.get(
   "/vote/:id",
   connectEnsureLogin.ensureLoggedIn(),
