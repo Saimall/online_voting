@@ -18,8 +18,6 @@ app.use(bodyParser.json());
 app.set("views", path.join(__dirname, "views"));
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
-app.set("view engine", "ejs");
-app.use(express.static(path.join(__dirname, "public")));
 app.use(flash());
 app.use(cookieParser("Some secret String"));
 app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
@@ -103,7 +101,7 @@ passport.deserializeUser((id, done) => {
       .catch((error) => {
         done(error, null);
       });
-  } else if (id.case === "voters") {
+  } else if (id.role === "voters") {
     Voters.findByPk(id.id)
       .then((user) => {
         done(null, user);
@@ -113,6 +111,29 @@ passport.deserializeUser((id, done) => {
       });
   }
 });
+app.set("view engine", "ejs");
+app.use(express.static(path.join(__dirname, "public")));
+
+app.post(
+  "/session",
+  passport.authenticate("user-local", {
+    failureRedirect: "/login",
+    failureFlash: true,
+  }),
+  (request, response) => {
+    response.redirect("/elections");
+  }
+);
+
+app.post(
+  "/vote/:publicurl",
+  passport.authenticate("voter-local", {
+    failureFlash: true,
+  }),
+  async (request, response) => {
+    return response.redirect(`/vote/${request.params.publicurl}`);
+  }
+);
 
 app.get("/", (request, response) => {
   if (request.user) {
@@ -241,17 +262,6 @@ app.get("/login", (request, response) => {
     csrfToken: request.csrfToken(),
   });
 });
-
-app.post(
-  "/session",
-  passport.authenticate("user-local", {
-    failureRedirect: "/login",
-    failureFlash: true,
-  }),
-  (request, response) => {
-    response.redirect("/elections");
-  }
-);
 
 app.post("/admin", async (request, response) => {
   const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
@@ -843,13 +853,4 @@ app.get(
   }
 );
 
-app.post(
-  "/vote/:publicurl",
-  passport.authenticate("voter-local", {
-    failureFlash: true,
-  }),
-  async (request, response) => {
-    return response.redirect(`/vote/${request.params.publicurl}`);
-  }
-);
 module.exports = app;
