@@ -11,7 +11,7 @@ module.exports = {
       },
       case: {
         type: Sequelize.STRING,
-        defaultValue: "Voters",
+        defaultValue: "voters",
       },
       voterid: {
         type: Sequelize.STRING,

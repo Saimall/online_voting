@@ -14,15 +14,16 @@ const passport = require("passport");
 const { AsyncLocalStorage } = require("async_hooks");
 const flash = require("connect-flash");
 const saltRounds = 10;
-
+app.use(bodyParser.json());
 app.set("views", path.join(__dirname, "views"));
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
+app.use(express.static(path.join(__dirname, "public")));
 app.use(flash());
 app.use(cookieParser("Some secret String"));
 app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
-app.use(express.static(path.join(__dirname, "public")));
+
 app.use(
   session({
     secret: "my-super-secret-key-2837428907583420",
@@ -65,18 +66,17 @@ passport.use(
   "voter-local",
   new LocalStratergy(
     {
-      usernameField: "voterID",
+      usernameField: "voterid",
       passwordField: "password",
-      passReqToCallback: true,
     },
-    (request, voterID, password, done) => {
+    (username, password, done) => {
       Voters.findOne({
-        where: { voterID: voterID, electionID: request.params.id },
+        where: { voterid: username },
       })
-        .then(async (voter) => {
-          const result = await bcrypt.compare(password, voter.password);
+        .then(async (user) => {
+          const result = await bcrypt.compare(password, user.password);
           if (result) {
-            return done(null, voter);
+            return done(null, user);
           } else {
             return done(null, false, { message: "Invalid password" });
           }
@@ -94,40 +94,36 @@ passport.use(
 passport.serializeUser((user, done) => {
   done(null, { id: user.id, case: user.case });
 });
-passport.deserializeUser((user, done) => {
-  switch (user.case) {
-    case "Admins":
-      Admin.findByPk(user.id)
-        .then((user) => {
-          done(null, user);
-        })
-        .catch((error) => {
-          done(error, null);
-        });
-      break;
-    case "Voters":
-      Voters.findByPk(user.id)
-        .then((user) => {
-          done(null, user);
-        })
-        .catch((error) => {
-          done(error, null);
-        });
-      break;
-    default:
-      done(new Error("no entity type:", user.type), null);
-      break;
+passport.deserializeUser((id, done) => {
+  if (id.case === "admins") {
+    Admin.findByPk(id.id)
+      .then((user) => {
+        done(null, user);
+      })
+      .catch((error) => {
+        done(error, null);
+      });
+  } else if (id.case === "voters") {
+    Voters.findByPk(id.id)
+      .then((user) => {
+        done(null, user);
+      })
+      .catch((error) => {
+        done(error, null);
+      });
   }
 });
 
 app.get("/", (request, response) => {
   if (request.user) {
-    if (request.user.case === "Admins") return response.redirect("/elections");
-    else if (request.user.case === "Voters") {
+    if (request.user.case === "admins") {
+      return response.redirect("/elections");
+    } else if (request.user.case === "voters") {
       request.logout((err) => {
         if (err) {
           return response.json(err);
         }
+        response.redirect("/");
       });
     }
   } else {
@@ -149,7 +145,7 @@ app.get(
   "/elections",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       let loggedinuser = request.user.firstName + " " + request.user.lastName;
       try {
         const elections_list = await Election.getElections(request.user.id);
@@ -169,9 +165,6 @@ app.get(
         return response.status(422).json(error);
       }
     }
-    if (request.user.case === "Voters") {
-      return response.redirect("/");
-    }
   }
 );
 // app.get(
@@ -190,14 +183,11 @@ app.get(
   "/create",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       response.render("new", {
         title: "Create an election",
         csrfToken: request.csrfToken(),
       });
-    }
-    if (request.user.case === "Voters") {
-      return response.redirect("/");
     }
   }
 );
@@ -206,7 +196,7 @@ app.post(
   "/elections",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       try {
         await Election.addElections({
           electionName: request.body.electionName,
@@ -288,7 +278,7 @@ app.get(
   "/listofelections/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       try {
         const voter = await Voters.retrivevoters(request.params.id);
         const question = await questions.retrievequestion(request.params.id);
@@ -322,7 +312,7 @@ app.get(
   "/questions/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       const electionlist = await Election.getElections(
         request.params.id,
         request.user.id
@@ -356,7 +346,7 @@ app.get(
   "/questionscreate/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       response.render("createquestion", {
         id: request.params.id,
         csrfToken: request.csrfToken(),
@@ -369,7 +359,7 @@ app.post(
   "/questionscreate/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       try {
         const question = await questions.addquestion({
           electionID: request.params.id,
@@ -391,7 +381,7 @@ app.get(
   "/displayelections/correspondingquestion/:id/:questionID/options",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       try {
         const question = await questions.retrievequestion(
           request.params.questionID
@@ -422,7 +412,7 @@ app.delete(
   "/deletequestion/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       try {
         const res = await questions.removequestion(request.params.id);
         return response.json({ success: res === 1 });
@@ -438,7 +428,7 @@ app.post(
   "/displayelections/correspondingquestion/:id/:questionID/options",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       try {
         await options.addoption({
           optionname: request.body.optionname,
@@ -459,7 +449,7 @@ app.delete(
   "/:id/deleteoptions",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       try {
         const res = await options.removeoptions(request.params.id);
         return response.json({ success: res === 1 });
@@ -474,7 +464,7 @@ app.get(
   "/elections/:electionID/questions/:questionID/modify",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case == "Admins") {
+    if (request.user.case === "admins") {
       const adminID = request.user.id;
       const admin = await Admin.findByPk(adminID);
       const election = await Election.findByPk(request.params.electionID);
@@ -492,7 +482,7 @@ app.post(
   "/elections/:electionID/questions/:questionID/modify",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       try {
         await questions.modifyquestion(
           request.body.questionname,
@@ -511,7 +501,7 @@ app.get(
   "/elections/:electionID/questions/:questionID/options/:optionID/modify",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       const adminID = request.user.id;
       const admin = await Admin.findByPk(adminID);
       const election = await Election.findByPk(request.params.electionID);
@@ -531,7 +521,7 @@ app.post(
   "/elections/:electionID/questions/:questionID/options/:optionID/modify",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       try {
         await options.modifyoption(
           request.body.optionname,
@@ -552,7 +542,7 @@ app.get(
   "/voters/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       const electionlist = await Election.getElections(
         request.params.id,
         request.user.id
@@ -576,7 +566,7 @@ app.get(
   }
 );
 app.get("/voters/listofelections/:id", async (request, response) => {
-  if (request.user.case === "Admins") {
+  if (request.user.case === "admins") {
     try {
       const electionname = await Election.getElections(
         request.params.id,
@@ -603,7 +593,7 @@ app.get("/voters/listofelections/:id", async (request, response) => {
 });
 
 app.get("/elections/listofelections/:id", async (request, response) => {
-  if (request.user.case === "Admins") {
+  if (request.user.case === "admins") {
     try {
       const election = await Election.getElections(
         request.params.id,
@@ -633,7 +623,7 @@ app.get(
   "/createvoter/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       const voterslist = await Voters.retrivevoters(request.params.id);
       if (request.accepts("html")) {
         response.render("createvoter", {
@@ -651,7 +641,7 @@ app.post(
   "/createvoter/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
       try {
         await Voters.add(request.body.voterid, hashedPwd, request.params.id);
@@ -668,7 +658,7 @@ app.get(
   "/elections/:electionID/voter/:voterID/edit",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       const election = await Election.findByPk(request.params.electionID);
       const voter = await Voters.findByPk(request.params.voterID);
       response.render("modifyvoters", {
@@ -684,11 +674,11 @@ app.post(
   "/elections/:electionID/voter/:voterID/modify",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       try {
         await Voters.modifypassword(
           request.params.voterID,
-          request.body.password
+          request.body.Voterpassword
         );
         response.redirect(`/voters/${request.params.electionID}`);
       } catch (error) {
@@ -703,7 +693,7 @@ app.delete(
   "/:id/voterdelete",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       try {
         const res = await Voters.delete(request.params.id);
         return response.json({ success: res === 1 });
@@ -719,7 +709,7 @@ app.get(
   "/election/:id/launch",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       const question = await questions.findAll({
         where: { electionID: request.params.id },
       });
@@ -766,7 +756,7 @@ app.get(
   "/election/:id/electionpreview",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Admins") {
+    if (request.user.case === "admins") {
       const election = await Election.findByPk(request.params.id);
       const optionsnew = [];
       const question = await questions.retrievequestions(request.params.id);
@@ -804,6 +794,7 @@ app.get(
           optionsnew.push(optionlist);
         }
         return response.render("voterlogin", {
+          publicurl: election.publicurl,
           id: election.id,
           title: election.electionName,
           electionID: election.id,
@@ -821,47 +812,44 @@ app.get(
   }
 );
 app.get(
-  "/vote/:id",
+  "/vote/:publicurl",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    if (request.user.case === "Voters") {
-      try {
-        const election = await Election.getElectionurl(request.params.id);
-        if (election.launched) {
-          const question = await questions.retrievequestions(election.id);
-          let optionsnew = [];
-          for (let i = 0; i < question.length; i++) {
-            const optionlist = await options.retrieveoptions(question[i].id);
-            optionsnew.push(optionlist);
-          }
-
-          return response.render("voterview", {
-            id: election.id,
-            title: election.electionName,
-            electionID: election.id,
-            question,
-            optionsnew,
-            csrfToken: request.csrfToken(),
-          });
-        } else {
-          return response.render("invalid");
+    try {
+      const election = await Election.getElectionurl(request.params.publicurl);
+      if (election.launched) {
+        const question = await questions.retrievequestions(election.id);
+        let optionsnew = [];
+        for (let i = 0; i < question.length; i++) {
+          const optionlist = await options.retrieveoptions(question[i].id);
+          optionsnew.push(optionlist);
         }
-      } catch (error) {
-        console.log(error);
-        return response.status(422).json(error);
+
+        return response.render("voterview", {
+          id: election.id,
+          title: election.electionName,
+          electionID: election.id,
+          question,
+          optionsnew,
+          csrfToken: request.csrfToken(),
+        });
+      } else {
+        return response.render("invalid");
       }
+    } catch (error) {
+      console.log(error);
+      return response.status(422).json(error);
     }
   }
 );
 
 app.post(
-  "/vote/:id",
+  "/vote/:publicurl",
   passport.authenticate("voter-local", {
-    failureRedirect: "back",
     failureFlash: true,
   }),
-  function (request, response) {
-    return response.redirect(`/vote/${request.params.id}`);
+  async (request, response) => {
+    return response.redirect(`/vote/${request.params.publicurl}`);
   }
 );
 module.exports = app;

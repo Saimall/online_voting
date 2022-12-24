@@ -11,7 +11,7 @@ module.exports = {
       },
       case: {
         type: Sequelize.STRING,
-        defaultValue: "Admins",
+        defaultValue: "admins",
       },
       firstName: {
         type: Sequelize.STRING,

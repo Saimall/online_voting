@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         {
           where: {
-            id: voterid,
+            voterid: voterid,
           },
         }
       );
