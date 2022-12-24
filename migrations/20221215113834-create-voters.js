@@ -9,6 +9,10 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
+      case: {
+        type: Sequelize.STRING,
+        defaultValue: "Voters",
+      },
       voterid: {
         type: Sequelize.STRING,
         unique: true,

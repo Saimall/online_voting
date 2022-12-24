@@ -92,21 +92,44 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, { id: user.id, case: user.case });
 });
-passport.deserializeUser((id, done) => {
-  Admin.findByPk(id)
-    .then((user) => {
-      done(null, user);
-    })
-    .catch((error) => {
-      done(error, null);
-    });
+passport.deserializeUser((user, done) => {
+  switch (user.case) {
+    case "Admins":
+      Admin.findByPk(user.id)
+        .then((user) => {
+          done(null, user);
+        })
+        .catch((error) => {
+          done(error, null);
+        });
+      break;
+    case "Voters":
+      Voters.findByPk(user.id)
+        .then((user) => {
+          done(null, user);
+        })
+        .catch((error) => {
+          done(error, null);
+        });
+      break;
+    default:
+      done(new Error("no entity type:", user.type), null);
+      break;
+  }
 });
 
 app.get("/", (request, response) => {
   if (request.user) {
-    return response.redirect("/elections");
+    if (request.user.case === "Admins") return response.redirect("/elections");
+    else if (request.user.case === "Voters") {
+      request.logout((err) => {
+        if (err) {
+          return response.json(err);
+        }
+      });
+    }
   } else {
     response.render("index", {
       title: "Welcom To Online Voting Platform",
@@ -126,23 +149,28 @@ app.get(
   "/elections",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    let loggedinuser = request.user.firstName + " " + request.user.lastName;
-    try {
-      const elections_list = await Election.getElections(request.user.id);
-      if (request.accepts("html")) {
-        response.render("elections", {
-          title: "Online Voting interface",
-          userName: loggedinuser,
-          elections_list,
-        });
-      } else {
-        return response.json({
-          elections_list,
-        });
+    if (request.user.case === "Admins") {
+      let loggedinuser = request.user.firstName + " " + request.user.lastName;
+      try {
+        const elections_list = await Election.getElections(request.user.id);
+        if (request.accepts("html")) {
+          response.render("elections", {
+            title: "Online Voting interface",
+            userName: loggedinuser,
+            elections_list,
+          });
+        } else {
+          return response.json({
+            elections_list,
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
       }
-    } catch (error) {
-      console.log(error);
-      return response.status(422).json(error);
+    }
+    if (request.user.case === "Voters") {
+      return response.redirect("/");
     }
   }
 );
@@ -162,10 +190,15 @@ app.get(
   "/create",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    response.render("new", {
-      title: "Create an election",
-      csrfToken: request.csrfToken(),
-    });
+    if (request.user.case === "Admins") {
+      response.render("new", {
+        title: "Create an election",
+        csrfToken: request.csrfToken(),
+      });
+    }
+    if (request.user.case === "Voters") {
+      return response.redirect("/");
+    }
   }
 );
 
@@ -173,16 +206,18 @@ app.post(
   "/elections",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    try {
-      await Election.addElections({
-        electionName: request.body.electionName,
-        publicurl: request.body.publicurl,
-        adminID: request.user.id,
-      });
-      response.redirect("/elections");
-    } catch (error) {
-      console.log(error);
-      return response.status(422).json(error);
+    if (request.user.case === "Admins") {
+      try {
+        await Election.addElections({
+          electionName: request.body.electionName,
+          publicurl: request.body.publicurl,
+          adminID: request.user.id,
+        });
+        response.redirect("/elections");
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
     }
   }
 );
@@ -253,10 +288,296 @@ app.get(
   "/listofelections/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    try {
-      const voter = await Voters.retrivevoters(request.params.id);
-      const question = await questions.retrievequestion(request.params.id);
+    if (request.user.case === "Admins") {
+      try {
+        const voter = await Voters.retrivevoters(request.params.id);
+        const question = await questions.retrievequestion(request.params.id);
+        const election = await Election.findByPk(request.params.id);
+        const electionname = await Election.getElections(
+          request.params.id,
+          request.user.id
+        );
+        const countofquestions = await questions.countquestions(
+          request.params.id
+        );
+        const countofvoters = await Voters.countvoters(request.params.id);
+        response.render("election_page", {
+          election: election,
+          publicurl: election.publicurl,
+          voters: voter,
+          questions: question,
+          id: request.params.id,
+          title: electionname.electionName,
+          countquestions: countofquestions,
+          countvoters: countofvoters,
+        });
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    }
+  }
+);
+app.get(
+  "/questions/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "Admins") {
+      const electionlist = await Election.getElections(
+        request.params.id,
+        request.user.id
+      );
+      const questions1 = await questions.retrievequestions(request.params.id);
       const election = await Election.findByPk(request.params.id);
+      if (election.launched) {
+        request.flash(
+          "error",
+          "Can not modify question while election is running!!"
+        );
+        return response.redirect(`/listofelections/${request.params.id}`);
+      }
+      if (request.accepts("html")) {
+        response.render("questions", {
+          title: electionlist.electionName,
+          id: request.params.id,
+          questions: questions1,
+          election: election,
+          csrfToken: request.csrfToken(),
+        });
+      } else {
+        return response.json({
+          questions1,
+        });
+      }
+    }
+  }
+);
+app.get(
+  "/questionscreate/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "Admins") {
+      response.render("createquestion", {
+        id: request.params.id,
+        csrfToken: request.csrfToken(),
+      });
+    }
+  }
+);
+
+app.post(
+  "/questionscreate/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "Admins") {
+      try {
+        const question = await questions.addquestion({
+          electionID: request.params.id,
+          questionname: request.body.questionname,
+          description: request.body.description,
+        });
+        return response.redirect(
+          `/displayelections/correspondingquestion/${request.params.id}/${question.id}/options`
+        );
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    }
+  }
+);
+
+app.get(
+  "/displayelections/correspondingquestion/:id/:questionID/options",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "Admins") {
+      try {
+        const question = await questions.retrievequestion(
+          request.params.questionID
+        );
+        const option = await options.retrieveoptions(request.params.questionID);
+        if (request.accepts("html")) {
+          response.render("questiondisplay", {
+            title: question.question,
+            description: question.description,
+            id: request.params.id,
+            questionID: request.params.questionID,
+            option,
+            csrfToken: request.csrfToken(),
+          });
+        } else {
+          return response.json({
+            option,
+          });
+        }
+      } catch (err) {
+        return response.status(422).json(err);
+      }
+    }
+  }
+);
+
+app.delete(
+  "/deletequestion/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "Admins") {
+      try {
+        const res = await questions.removequestion(request.params.id);
+        return response.json({ success: res === 1 });
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    }
+  }
+);
+
+app.post(
+  "/displayelections/correspondingquestion/:id/:questionID/options",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "Admins") {
+      try {
+        await options.addoption({
+          optionname: request.body.optionname,
+          questionID: request.params.questionID,
+        });
+        return response.redirect(
+          `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options`
+        );
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    }
+  }
+);
+
+app.delete(
+  "/:id/deleteoptions",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "Admins") {
+      try {
+        const res = await options.removeoptions(request.params.id);
+        return response.json({ success: res === 1 });
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
+    }
+  }
+);
+app.get(
+  "/elections/:electionID/questions/:questionID/modify",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case == "Admins") {
+      const adminID = request.user.id;
+      const admin = await Admin.findByPk(adminID);
+      const election = await Election.findByPk(request.params.electionID);
+      const Question = await questions.findByPk(request.params.questionID);
+      response.render("modifyquestion", {
+        username: admin.name,
+        election: election,
+        question: Question,
+        csrf: request.csrfToken(),
+      });
+    }
+  }
+);
+app.post(
+  "/elections/:electionID/questions/:questionID/modify",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "Admins") {
+      try {
+        await questions.modifyquestion(
+          request.body.questionname,
+          request.body.description,
+          request.params.questionID
+        );
+        response.redirect(`/questions/${request.params.electionID}`);
+      } catch (error) {
+        console.log(error);
+        return;
+      }
+    }
+  }
+);
+app.get(
+  "/elections/:electionID/questions/:questionID/options/:optionID/modify",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "Admins") {
+      const adminID = request.user.id;
+      const admin = await Admin.findByPk(adminID);
+      const election = await Election.findByPk(request.params.electionID);
+      const Question = await questions.findByPk(request.params.questionID);
+      const option = await options.findByPk(request.params.optionID);
+      response.render("modifyoption", {
+        username: admin.name,
+        election: election,
+        question: Question,
+        option: option,
+        csrf: request.csrfToken(),
+      });
+    }
+  }
+);
+app.post(
+  "/elections/:electionID/questions/:questionID/options/:optionID/modify",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "Admins") {
+      try {
+        await options.modifyoption(
+          request.body.optionname,
+          request.params.optionID
+        );
+        response.redirect(
+          `/displayelections/correspondingquestion/${request.params.electionID}/${request.params.questionID}/options`
+        );
+      } catch (error) {
+        console.log(error);
+        return;
+      }
+    }
+  }
+);
+
+app.get(
+  "/voters/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "Admins") {
+      const electionlist = await Election.getElections(
+        request.params.id,
+        request.user.id
+      );
+      const voterlist = await Voters.retrivevoters(request.params.id);
+      const election = await Election.findByPk(request.params.id);
+      if (request.accepts("html")) {
+        response.render("voters", {
+          title: electionlist.electionName,
+          id: request.params.id,
+          voters: voterlist,
+          election: election,
+          csrfToken: request.csrfToken(),
+        });
+      } else {
+        return response.json({
+          voterlist,
+        });
+      }
+    }
+  }
+);
+app.get("/voters/listofelections/:id", async (request, response) => {
+  if (request.user.case === "Admins") {
+    try {
       const electionname = await Election.getElections(
         request.params.id,
         request.user.id
@@ -265,11 +586,10 @@ app.get(
         request.params.id
       );
       const countofvoters = await Voters.countvoters(request.params.id);
+      const election = await Election.findByPk(request.params.id);
       response.render("election_page", {
-        election: election,
         publicurl: election.publicurl,
-        voters: voter,
-        questions: question,
+        election: election,
         id: request.params.id,
         title: electionname.electionName,
         countquestions: countofquestions,
@@ -280,283 +600,32 @@ app.get(
       return response.status(422).json(error);
     }
   }
-);
-app.get(
-  "/questions/:id",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    const electionlist = await Election.getElections(
-      request.params.id,
-      request.user.id
-    );
-    const questions1 = await questions.retrievequestions(request.params.id);
-    const election = await Election.findByPk(request.params.id);
-    if (election.launched) {
-      request.flash(
-        "error",
-        "Can not modify question while election is running!!"
-      );
-      return response.redirect(`/listofelections/${request.params.id}`);
-    }
-    if (request.accepts("html")) {
-      response.render("questions", {
-        title: electionlist.electionName,
-        id: request.params.id,
-        questions: questions1,
-        election: election,
-        csrfToken: request.csrfToken(),
-      });
-    } else {
-      return response.json({
-        questions1,
-      });
-    }
-  }
-);
-app.get(
-  "/questionscreate/:id",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    response.render("createquestion", {
-      id: request.params.id,
-      csrfToken: request.csrfToken(),
-    });
-  }
-);
-
-app.post(
-  "/questionscreate/:id",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    try {
-      const question = await questions.addquestion({
-        electionID: request.params.id,
-        questionname: request.body.questionname,
-        description: request.body.description,
-      });
-      return response.redirect(
-        `/displayelections/correspondingquestion/${request.params.id}/${question.id}/options`
-      );
-    } catch (error) {
-      console.log(error);
-      return response.status(422).json(error);
-    }
-  }
-);
-
-app.get(
-  "/displayelections/correspondingquestion/:id/:questionID/options",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    try {
-      const question = await questions.retrievequestion(
-        request.params.questionID
-      );
-      const option = await options.retrieveoptions(request.params.questionID);
-      if (request.accepts("html")) {
-        response.render("questiondisplay", {
-          title: question.question,
-          description: question.description,
-          id: request.params.id,
-          questionID: request.params.questionID,
-          option,
-          csrfToken: request.csrfToken(),
-        });
-      } else {
-        return response.json({
-          option,
-        });
-      }
-    } catch (err) {
-      return response.status(422).json(err);
-    }
-  }
-);
-
-app.delete(
-  "/deletequestion/:id",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    try {
-      const res = await questions.removequestion(request.params.id);
-      return response.json({ success: res === 1 });
-    } catch (error) {
-      console.log(error);
-      return response.status(422).json(error);
-    }
-  }
-);
-
-app.post(
-  "/displayelections/correspondingquestion/:id/:questionID/options",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    try {
-      await options.addoption({
-        optionname: request.body.optionname,
-        questionID: request.params.questionID,
-      });
-      return response.redirect(
-        `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options`
-      );
-    } catch (error) {
-      console.log(error);
-      return response.status(422).json(error);
-    }
-  }
-);
-
-app.delete(
-  "/:id/deleteoptions",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    try {
-      const res = await options.removeoptions(request.params.id);
-      return response.json({ success: res === 1 });
-    } catch (error) {
-      console.log(error);
-      return response.status(422).json(error);
-    }
-  }
-);
-app.get(
-  "/elections/:electionID/questions/:questionID/modify",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    const adminID = request.user.id;
-    const admin = await Admin.findByPk(adminID);
-    const election = await Election.findByPk(request.params.electionID);
-    const Question = await questions.findByPk(request.params.questionID);
-    response.render("modifyquestion", {
-      username: admin.name,
-      election: election,
-      question: Question,
-      csrf: request.csrfToken(),
-    });
-  }
-);
-app.post(
-  "/elections/:electionID/questions/:questionID/modify",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    try {
-      await questions.modifyquestion(
-        request.body.questionname,
-        request.body.description,
-        request.params.questionID
-      );
-      response.redirect(`/questions/${request.params.electionID}`);
-    } catch (error) {
-      console.log(error);
-      return;
-    }
-  }
-);
-app.get(
-  "/elections/:electionID/questions/:questionID/options/:optionID/modify",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    const adminID = request.user.id;
-    const admin = await Admin.findByPk(adminID);
-    const election = await Election.findByPk(request.params.electionID);
-    const Question = await questions.findByPk(request.params.questionID);
-    const option = await options.findByPk(request.params.optionID);
-    response.render("modifyoption", {
-      username: admin.name,
-      election: election,
-      question: Question,
-      option: option,
-      csrf: request.csrfToken(),
-    });
-  }
-);
-app.post(
-  "/elections/:electionID/questions/:questionID/options/:optionID/modify",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    try {
-      await options.modifyoption(
-        request.body.optionname,
-        request.params.optionID
-      );
-      response.redirect(
-        `/displayelections/correspondingquestion/${request.params.electionID}/${request.params.questionID}/options`
-      );
-    } catch (error) {
-      console.log(error);
-      return;
-    }
-  }
-);
-
-app.get(
-  "/voters/:id",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    const electionlist = await Election.getElections(
-      request.params.id,
-      request.user.id
-    );
-    const voterlist = await Voters.retrivevoters(request.params.id);
-    const election = await Election.findByPk(request.params.id);
-    if (request.accepts("html")) {
-      response.render("voters", {
-        title: electionlist.electionName,
-        id: request.params.id,
-        voters: voterlist,
-        election: election,
-        csrfToken: request.csrfToken(),
-      });
-    } else {
-      return response.json({
-        voterlist,
-      });
-    }
-  }
-);
-app.get("/voters/listofelections/:id", async (request, response) => {
-  try {
-    const electionname = await Election.getElections(
-      request.params.id,
-      request.user.id
-    );
-    const countofquestions = await questions.countquestions(request.params.id);
-    const countofvoters = await Voters.countvoters(request.params.id);
-    const election = await Election.findByPk(request.params.id);
-    response.render("election_page", {
-      publicurl: election.publicurl,
-      election: election,
-      id: request.params.id,
-      title: electionname.electionName,
-      countquestions: countofquestions,
-      countvoters: countofvoters,
-    });
-  } catch (error) {
-    console.log(error);
-    return response.status(422).json(error);
-  }
 });
 
 app.get("/elections/listofelections/:id", async (request, response) => {
-  try {
-    const election = await Election.getElections(
-      request.params.id,
-      request.user.id
-    );
-    const ele = await Election.findByPk(request.params.id);
-    const countofquestions = await questions.countquestions(request.params.id);
-    const countofvoters = await Voters.countvoters(request.params.id);
-    response.render("election_page", {
-      id: request.params.id,
-      publicurl: ele.publicurl,
-      title: election.electionName,
-      election: election,
-      countquestions: countofquestions,
-      countvoters: countofvoters,
-    });
-  } catch (error) {
-    console.log(error);
-    return response.status(422).json(error);
+  if (request.user.case === "Admins") {
+    try {
+      const election = await Election.getElections(
+        request.params.id,
+        request.user.id
+      );
+      const ele = await Election.findByPk(request.params.id);
+      const countofquestions = await questions.countquestions(
+        request.params.id
+      );
+      const countofvoters = await Voters.countvoters(request.params.id);
+      response.render("election_page", {
+        id: request.params.id,
+        publicurl: ele.publicurl,
+        title: election.electionName,
+        election: election,
+        countquestions: countofquestions,
+        countvoters: countofvoters,
+      });
+    } catch (error) {
+      console.log(error);
+      return response.status(422).json(error);
+    }
   }
 });
 
@@ -564,14 +633,16 @@ app.get(
   "/createvoter/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    const voterslist = await Voters.retrivevoters(request.params.id);
-    if (request.accepts("html")) {
-      response.render("createvoter", {
-        id: request.params.id,
-        csrfToken: request.csrfToken({ voterslist }),
-      });
-    } else {
-      return response.json({ voterslist });
+    if (request.user.case === "Admins") {
+      const voterslist = await Voters.retrivevoters(request.params.id);
+      if (request.accepts("html")) {
+        response.render("createvoter", {
+          id: request.params.id,
+          csrfToken: request.csrfToken({ voterslist }),
+        });
+      } else {
+        return response.json({ voterslist });
+      }
     }
   }
 );
@@ -580,13 +651,15 @@ app.post(
   "/createvoter/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
-    try {
-      await Voters.add(request.body.voterid, hashedPwd, request.params.id);
-      return response.redirect(`/voters/${request.params.id}`);
-    } catch (error) {
-      console.log(error);
-      return response.status(422).json(error);
+    if (request.user.case === "Admins") {
+      const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
+      try {
+        await Voters.add(request.body.voterid, hashedPwd, request.params.id);
+        return response.redirect(`/voters/${request.params.id}`);
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
     }
   }
 );
@@ -595,13 +668,15 @@ app.get(
   "/elections/:electionID/voter/:voterID/edit",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    const election = await Election.findByPk(request.params.electionID);
-    const voter = await Voters.findByPk(request.params.voterID);
-    response.render("modifyvoters", {
-      election: election,
-      voter: voter,
-      csrf: request.csrfToken(),
-    });
+    if (request.user.case === "Admins") {
+      const election = await Election.findByPk(request.params.electionID);
+      const voter = await Voters.findByPk(request.params.voterID);
+      response.render("modifyvoters", {
+        election: election,
+        voter: voter,
+        csrf: request.csrfToken(),
+      });
+    }
   }
 );
 
@@ -609,15 +684,17 @@ app.post(
   "/elections/:electionID/voter/:voterID/modify",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    try {
-      await Voters.modifypassword(
-        request.params.voterID,
-        request.body.password
-      );
-      response.redirect(`/voters/${request.params.electionID}`);
-    } catch (error) {
-      console.log(error);
-      return;
+    if (request.user.case === "Admins") {
+      try {
+        await Voters.modifypassword(
+          request.params.voterID,
+          request.body.password
+        );
+        response.redirect(`/voters/${request.params.electionID}`);
+      } catch (error) {
+        console.log(error);
+        return;
+      }
     }
   }
 );
@@ -626,12 +703,14 @@ app.delete(
   "/:id/voterdelete",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    try {
-      const res = await Voters.delete(request.params.id);
-      return response.json({ success: res === 1 });
-    } catch (error) {
-      console.log(error);
-      return response.status(422).json(error);
+    if (request.user.case === "Admins") {
+      try {
+        const res = await Voters.delete(request.params.id);
+        return response.json({ success: res === 1 });
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
+      }
     }
   }
 );
@@ -640,40 +719,45 @@ app.get(
   "/election/:id/launch",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    const question = await questions.findAll({
-      where: { electionID: request.params.id },
-    });
-    if (question.length <= 1) {
-      request.flash("error", "Please add atleast two question in the ballot!!");
-      return response.redirect(`/listofelections/${request.params.id}`);
-    }
-
-    for (let i = 0; i < question.length; i++) {
-      const option = await options.retrieveoptions(question[i].id);
-      if (option.length <= 1) {
+    if (request.user.case === "Admins") {
+      const question = await questions.findAll({
+        where: { electionID: request.params.id },
+      });
+      if (question.length <= 1) {
         request.flash(
           "error",
-          "Kindly add atleast two options to the question!!!"
+          "Please add atleast two question in the ballot!!"
         );
         return response.redirect(`/listofelections/${request.params.id}`);
       }
-    }
 
-    const voters = await Voters.retrivevoters(request.params.id);
-    if (voters.length <= 1) {
-      request.flash(
-        "error",
-        "There should be atleast two voter to lauch election"
-      );
-      return response.redirect(`/listofelections/${request.params.id}`);
-    }
+      for (let i = 0; i < question.length; i++) {
+        const option = await options.retrieveoptions(question[i].id);
+        if (option.length <= 1) {
+          request.flash(
+            "error",
+            "Kindly add atleast two options to the question!!!"
+          );
+          return response.redirect(`/listofelections/${request.params.id}`);
+        }
+      }
 
-    try {
-      await Election.launch(request.params.id);
-      return response.redirect(`/listofelections/${request.params.id}`);
-    } catch (error) {
-      console.log(error);
-      return response.send(error);
+      const voters = await Voters.retrivevoters(request.params.id);
+      if (voters.length <= 1) {
+        request.flash(
+          "error",
+          "There should be atleast two voter to lauch election"
+        );
+        return response.redirect(`/listofelections/${request.params.id}`);
+      }
+
+      try {
+        await Election.launch(request.params.id);
+        return response.redirect(`/listofelections/${request.params.id}`);
+      } catch (error) {
+        console.log(error);
+        return response.send(error);
+      }
     }
   }
 );
@@ -682,25 +766,27 @@ app.get(
   "/election/:id/electionpreview",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    const election = await Election.findByPk(request.params.id);
-    const optionsnew = [];
-    const question = await questions.retrievequestions(request.params.id);
+    if (request.user.case === "Admins") {
+      const election = await Election.findByPk(request.params.id);
+      const optionsnew = [];
+      const question = await questions.retrievequestions(request.params.id);
 
-    for (let i = 0; i < question.length; i++) {
-      const optionlist = await options.retrieveoptions(question[i].id);
-      optionsnew.push(optionlist);
-    }
-    if (election.launched) {
-      request.flash("error", "You can not preview election while Running");
-      return response.redirect(`/listofelections/${request.params.id}`);
-    }
+      for (let i = 0; i < question.length; i++) {
+        const optionlist = await options.retrieveoptions(question[i].id);
+        optionsnew.push(optionlist);
+      }
+      if (election.launched) {
+        request.flash("error", "You can not preview election while Running");
+        return response.redirect(`/listofelections/${request.params.id}`);
+      }
 
-    response.render("electionpreview", {
-      election: election,
-      questions: question,
-      options: optionsnew,
-      csrf: request.csrfToken(),
-    });
+      response.render("electionpreview", {
+        election: election,
+        questions: question,
+        options: optionsnew,
+        csrf: request.csrfToken(),
+      });
+    }
   }
 );
 
@@ -738,30 +824,32 @@ app.get(
   "/vote/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    try {
-      const election = await Election.getElectionurl(request.params.id);
-      if (election.launched) {
-        const question = await questions.retrievequestions(election.id);
-        let optionsnew = [];
-        for (let i = 0; i < question.length; i++) {
-          const optionlist = await options.retrieveoptions(question[i].id);
-          optionsnew.push(optionlist);
-        }
+    if (request.user.case === "Voters") {
+      try {
+        const election = await Election.getElectionurl(request.params.id);
+        if (election.launched) {
+          const question = await questions.retrievequestions(election.id);
+          let optionsnew = [];
+          for (let i = 0; i < question.length; i++) {
+            const optionlist = await options.retrieveoptions(question[i].id);
+            optionsnew.push(optionlist);
+          }
 
-        return response.render("voterview", {
-          id: election.id,
-          title: election.electionName,
-          electionID: election.id,
-          question,
-          optionsnew,
-          csrfToken: request.csrfToken(),
-        });
-      } else {
-        return response.render("invalid");
+          return response.render("voterview", {
+            id: election.id,
+            title: election.electionName,
+            electionID: election.id,
+            question,
+            optionsnew,
+            csrfToken: request.csrfToken(),
+          });
+        } else {
+          return response.render("invalid");
+        }
+      } catch (error) {
+        console.log(error);
+        return response.status(422).json(error);
       }
-    } catch (error) {
-      console.log(error);
-      return response.status(422).json(error);
     }
   }
 );
