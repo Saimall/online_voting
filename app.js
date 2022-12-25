@@ -282,7 +282,7 @@ app.post("/admin", async (request, response) => {
     return response.redirect("/signup");
   }
   if (request.body.password.length <= 5) {
-    request.flash("error", "password length should be minimum of length 5!!");
+    request.flash("error", "password length should be minimum of length 6!!");
     return response.redirect("/signup");
   }
   const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
