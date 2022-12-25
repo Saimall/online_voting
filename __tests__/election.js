@@ -13,20 +13,19 @@ function extractCsrfToken(res) {
   return $("[name=_csrf]").val();
 }
 
-// const login = async (agent, username, password) => {
-//   let res = await agent.get("/login");
-//   let csrfToken = extractCsrfToken(res);
-//   res = await agent.post("/session").send({
-//     email: username,
-//     password: password,
-//     _csrf: csrfToken,
-//   });
-// };
+const login = async (agent, username, password) => {
+  let res = await agent.get("/login");
+  let csrfToken = extractCsrfToken(res);
+  res = await agent.post("/session").send({
+    email: username,
+    password: password,
+    _csrf: csrfToken,
+  });
+};
 
 describe("Online election test suite ", function () {
   beforeAll(async () => {
-    await db.sequelize.sync({ force: true });
-    server = app.listen(4440, () => {});
+    server = app.listen(2000, () => {});
     agent = request.agent(server);
   });
 
@@ -40,7 +39,7 @@ describe("Online election test suite ", function () {
   });
 
   test("testing signup new user", async () => {
-    let res = await agent.get("/signup");
+    res = await agent.get("/signup");
     const csrfToken = extractCsrfToken(res);
     res = await agent.post("/admin").send({
       firstName: "mallik",
@@ -51,33 +50,33 @@ describe("Online election test suite ", function () {
     });
     expect(res.statusCode).toBe(302);
   });
-  // test("testing user login", async () => {
-  //   res = await agent.get("/elections");
-  //   expect(res.statusCode).toBe(302);
-  //   await login(agent,"sai@test.com","12345678");
-  //   res = await agent.get("/elections");
-  //   expect(res.statusCode).toBe(200);
-  // });
-  // test("testing user signout", async () => {
-  //   let res = await agent.get("/elections");
-  //   expect(res.statusCode).toBe(200);
-  //   res = await agent.get("/signout");
-  //   expect(res.statusCode).toBe(302);
-  //   res = await agent.get("/elections");
-  //   expect(res.statusCode).toBe(302);
-  // });
-  // test("testing creating a election", async () => {
-  //   const agent = request.agent(server);
-  //   await login(agent, "sai@test.com", "12345678");
-  //   const res = await agent.get("/create");
-  //   const csrfToken = extractCsrfToken(res);
-  //   const response = await agent.post("/elections").send({
-  //     electionName: "sai1",
-  //     publicurl: "url1",
-  //     _csrf: csrfToken,
-  //   });
-  //   expect(response.statusCode).toBe(302);
-  // });
+  test("testing user login", async () => {
+    res = await agent.get("/elections");
+    expect(res.statusCode).toBe(200);
+    await login(agent, "sai@test.com", "12345678");
+    res = await agent.get("/elections");
+    expect(res.statusCode).toBe(200);
+  });
+  test("testing user signout", async () => {
+    let res = await agent.get("/elections");
+    expect(res.statusCode).toBe(200);
+    res = await agent.get("/signout");
+    expect(res.statusCode).toBe(302);
+    res = await agent.get("/elections");
+    expect(res.statusCode).toBe(302);
+  });
+  test("testing creating a election", async () => {
+    const agent = request.agent(server);
+    await login(agent, "sai@test.com", "12345678");
+    const res = await agent.get("/create");
+    const csrfToken = extractCsrfToken(res);
+    const response = await agent.post("/elections").send({
+      electionName: "sai1",
+      publicurl: "url1",
+      _csrf: csrfToken,
+    });
+    expect(response.statusCode).toBe(302);
+  });
 
   // test("testing adding a question", async () => {
   //   const agent = request.agent(server);
@@ -92,21 +91,21 @@ describe("Online election test suite ", function () {
   //   });
   //   const groupedResponse = await agent
   //     .get("/elections")
-  //     .set("Accept", "application/json");
+  //     .set("Accept", "Application/json");
   //   const parsedResponse = JSON.parse(groupedResponse.text);
   //   const electionCount = parsedResponse.elections_list.length;
-  //   const latestElection = parsedResponse.elections_list[electionCount - 1];
+  //   const latestElection = parsedResponse.elections_list[electionCount-1];
 
   //   res = await agent.get(`/questionscreate/${latestElection.id}`);
   //   csrfToken = extractCsrfToken(res);
-  //   let response = await agent
+  //    res = await agent
   //     .post(`/questionscreate/${latestElection.id}`)
   //     .send({
   //       question: "Age",
   //       description: "Above 18",
   //       _csrf: csrfToken,
   //     });
-  //   expect(response.statusCode).toBe(302);
+  //   expect(res.statusCode).toBe(302);
   // });
 
   // test("testing deleting a question", async () => {
@@ -122,7 +121,7 @@ describe("Online election test suite ", function () {
   //   });
   //   const ElectionsResponse = await agent
   //     .get("/elections")
-  //     .set("Accept", "application/json");
+  //     .set("Accept", "Application/json");
   //   const parsedResponse = JSON.parse(ElectionsResponse.text);
   //   const electionCount = parsedResponse.elections_list.length;
   //   const latestElection = parsedResponse.elections_list[electionCount - 1];
@@ -430,160 +429,160 @@ describe("Online election test suite ", function () {
   //     });
   //   expect(res.statusCode).toBe(302);
   // });
-  // test("testing adding of voters", async () => {
-  //   const agent = request.agent(server);
-  //   await login(agent, "sai@test.com", "12345678");
+  test("testing adding of voters", async () => {
+    const agent = request.agent(server);
+    await login(agent, "sai@test.com", "12345678");
 
-  //   let res = await agent.get("/create");
-  //   let csrfToken = extractCsrfToken(res);
-  //   await agent.post("/elections").send({
-  //     electionName: "Test election",
-  //     publicurl: "url8",
-  //     _csrf: csrfToken,
-  //   });
-  //   const groupedResponse = await agent
-  //     .get("/elections")
-  //     .set("Accept", "application/json");
-  //   const parsedResponse = JSON.parse(groupedResponse.text);
-  //   const electionCount = parsedResponse.elections_list.length;
-  //   const latestElection = parsedResponse.elections_list[electionCount - 1];
-  //   res = await agent.get(`/createvoter/${latestElection.id}`);
-  //   csrfToken = extractCsrfToken(res);
-  //   let response = await agent.post(`/createvoter/${latestElection.id}`).send({
-  //     voterid: "1234",
-  //     password: "123",
-  //     electionID: latestElection.id,
-  //     _csrf: csrfToken,
-  //   });
-  //   expect(response.statusCode).toBe(302);
-  // });
+    let res = await agent.get("/create");
+    let csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "Test election",
+      publicurl: "url8",
+      _csrf: csrfToken,
+    });
+    const groupedResponse = await agent
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedResponse = JSON.parse(groupedResponse.text);
+    const electionCount = parsedResponse.elections_list.length;
+    const latestElection = parsedResponse.elections_list[electionCount - 1];
+    res = await agent.get(`/createvoter/${latestElection.id}`);
+    csrfToken = extractCsrfToken(res);
+    let response = await agent.post(`/createvoter/${latestElection.id}`).send({
+      voterid: "1234",
+      password: "123",
+      electionID: latestElection.id,
+      _csrf: csrfToken,
+    });
+    expect(response.statusCode).toBe(302);
+  });
 
-  // test("testing adding a voter", async () => {
-  //   const agent = request.agent(server);
-  //   await login(agent, "sai@test.com", "12345678");
+  test("testing adding a voter", async () => {
+    const agent = request.agent(server);
+    await login(agent, "sai@test.com", "12345678");
 
-  //   let res = await agent.get("/create");
-  //   let csrfToken = extractCsrfToken(res);
-  //   await agent.post("/elections").send({
-  //     electionName: "Test election",
-  //     publicurl: "url9",
-  //     _csrf: csrfToken,
-  //   });
-  //   const groupedResponse = await agent
-  //     .get("/elections")
-  //     .set("Accept", "application/json");
-  //   const parsedResponse = JSON.parse(groupedResponse.text);
-  //   const electionCount = parsedResponse.elections_list.length;
-  //   const latestElection = parsedResponse.elections_list[electionCount - 1];
+    let res = await agent.get("/create");
+    let csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "Test election",
+      publicurl: "url9",
+      _csrf: csrfToken,
+    });
+    const groupedResponse = await agent
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedResponse = JSON.parse(groupedResponse.text);
+    const electionCount = parsedResponse.elections_list.length;
+    const latestElection = parsedResponse.elections_list[electionCount - 1];
 
-  //   res = await agent.get(`/createvoter/${latestElection.id}`);
-  //   csrfToken = extractCsrfToken(res);
-  //   let response = await agent.post(`/createvoter/${latestElection.id}`).send({
-  //     voterid: "234",
-  //     password: "12345",
-  //     _csrf: csrfToken,
-  //   });
-  //   expect(response.statusCode).toBe(302);
-  // });
+    res = await agent.get(`/createvoter/${latestElection.id}`);
+    csrfToken = extractCsrfToken(res);
+    let response = await agent.post(`/createvoter/${latestElection.id}`).send({
+      voterid: "234",
+      password: "12345",
+      _csrf: csrfToken,
+    });
+    expect(response.statusCode).toBe(302);
+  });
 
-  // test("testing deleting a voter", async () => {
-  //   const agent = request.agent(server);
-  //   await login(agent, "sai@test.com", "12345678");
+  test("testing deleting a voter", async () => {
+    const agent = request.agent(server);
+    await login(agent, "sai@test.com", "12345678");
 
-  //   let res = await agent.get("/create");
-  //   let csrfToken = extractCsrfToken(res);
-  //   await agent.post("/elections").send({
-  //     electionName: "Election",
-  //     publicurl: "url10",
-  //     _csrf: csrfToken,
-  //   });
-  //   const ElectionsResponse = await agent
-  //     .get("/elections")
-  //     .set("Accept", "application/json");
-  //   const parsedElectionsResponse = JSON.parse(ElectionsResponse.text);
-  //   const electionCount = parsedElectionsResponse.elections_list.length;
-  //   const latestElection =
-  //     parsedElectionsResponse.elections_list[electionCount - 1];
+    let res = await agent.get("/create");
+    let csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "Election",
+      publicurl: "url10",
+      _csrf: csrfToken,
+    });
+    const ElectionsResponse = await agent
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedElectionsResponse = JSON.parse(ElectionsResponse.text);
+    const electionCount = parsedElectionsResponse.elections_list.length;
+    const latestElection =
+      parsedElectionsResponse.elections_list[electionCount - 1];
 
-  //   res = await agent.get(`/createvoter/${latestElection.id}`);
-  //   csrfToken = extractCsrfToken(res);
-  //   await agent.post(`/createvoter/${latestElection.id}`).send({
-  //     voterid: "2345",
-  //     password: "1234",
-  //     _csrf: csrfToken,
-  //   });
+    res = await agent.get(`/createvoter/${latestElection.id}`);
+    csrfToken = extractCsrfToken(res);
+    await agent.post(`/createvoter/${latestElection.id}`).send({
+      voterid: "2345",
+      password: "1234",
+      _csrf: csrfToken,
+    });
 
-  //   const voterResponse = await agent
-  //     .get(`/createvoter/${latestElection.id}`)
-  //     .set("Accept", "application/json");
-  //   const parsedGroupedResponse = JSON.parse(voterResponse.text);
-  //   const voterCount = parsedGroupedResponse.voterslist.length;
-  //   const latestvoter = parsedGroupedResponse.voterslist[voterCount - 1];
+    const voterResponse = await agent
+      .get(`/createvoter/${latestElection.id}`)
+      .set("Accept", "application/json");
+    const parsedGroupedResponse = JSON.parse(voterResponse.text);
+    const voterCount = parsedGroupedResponse.voterslist.length;
+    const latestvoter = parsedGroupedResponse.voterslist[voterCount - 1];
 
-  //   res = await agent.get(
-  //     `/elections/${latestElection.id}/voter/${latestvoter.id}/edit`
-  //   );
-  //   csrfToken = extractCsrfToken(res);
-  //   const deleteresponse = await agent
-  //     .delete(`/${latestvoter.id}/voterdelete`)
-  //     .send({
-  //       _csrf: csrfToken,
-  //     });
+    res = await agent.get(
+      `/elections/${latestElection.id}/voter/${latestvoter.id}/edit`
+    );
+    csrfToken = extractCsrfToken(res);
+    const deleteresponse = await agent
+      .delete(`/${latestvoter.id}/voterdelete`)
+      .send({
+        _csrf: csrfToken,
+      });
 
-  //   const parseddeleteResponse = JSON.parse(deleteresponse.text);
-  //   expect(parseddeleteResponse.success).toBe(true);
-  // });
+    const parseddeleteResponse = JSON.parse(deleteresponse.text);
+    expect(parseddeleteResponse.success).toBe(true);
+  });
 
-  // test("testing prevewing of election", async () => {
-  //   const agent = request.agent(server);
-  //   await login(agent, "sai@test.com", "12345678");
+  test("testing prevewing of election", async () => {
+    const agent = request.agent(server);
+    await login(agent, "sai@test.com", "12345678");
 
-  //   let res = await agent.get("/create");
-  //   let csrfToken = extractCsrfToken(res);
-  //   await agent.post("/elections").send({
-  //     electionName: "Election1",
-  //     publicurl: "url11",
-  //     _csrf: csrfToken,
-  //   });
-  //   const ElectionsResponse = await agent
-  //     .get("/elections")
-  //     .set("Accept", "application/json");
-  //   const parsedElectionsResponse = JSON.parse(ElectionsResponse.text);
-  //   const electionCount = parsedElectionsResponse.elections_list.length;
-  //   const latestElection =
-  //     parsedElectionsResponse.elections_list[electionCount - 1];
+    let res = await agent.get("/create");
+    let csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "Election1",
+      publicurl: "url11",
+      _csrf: csrfToken,
+    });
+    const ElectionsResponse = await agent
+      .get("/elections")
+      .set("Accept", "application/json");
+    const parsedElectionsResponse = JSON.parse(ElectionsResponse.text);
+    const electionCount = parsedElectionsResponse.elections_list.length;
+    const latestElection =
+      parsedElectionsResponse.elections_list[electionCount - 1];
 
-  //   res = await agent.get(`/election/${latestElection.id}/electionpreview`);
-  //   csrfToken = extractCsrfToken(res);
-  //   expect(res.statusCode).toBe(200);
-  // });
+    res = await agent.get(`/election/${latestElection.id}/electionpreview`);
+    csrfToken = extractCsrfToken(res);
+    expect(res.statusCode).toBe(200);
+  });
 
-  // test("testing the launching of an election", async () => {
-  //   const agent = request.agent(server);
-  //   await login(agent, "sai@test.com", "12345678");
+  test("testing the launching of an election", async () => {
+    const agent = request.agent(server);
+    await login(agent, "sai@test.com", "12345678");
 
-  //   res = await agent.get("/create");
-  //   csrfToken = extractCsrfToken(res);
-  //   await agent.post("/elections").send({
-  //     electionName: "Election1",
-  //     publicurl: "url11",
-  //     _csrf: csrfToken,
-  //   });
-  //   const ElectionsResponse = await agent
-  //     .get("/elections")
-  //     .set("Accept", "application/json");
-  //   const parsedElectionsResponse = JSON.parse(ElectionsResponse.text);
-  //   const electionCount = parsedElectionsResponse.elections_list.length;
-  //   const electionlist =
-  //     parsedElectionsResponse.elections_list[electionCount - 1];
+    res = await agent.get("/create");
+    csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "Election1",
+      publicurl: "url11",
+      _csrf: csrfToken,
+    });
+    const ElectionsResponse = await agent
+      .get("/elections")
+      .set("Accept", "Application/json");
+    const parsedElectionsResponse = JSON.parse(ElectionsResponse.text);
+    const electionCount = parsedElectionsResponse.elections_list.length;
+    const electionlist =
+      parsedElectionsResponse.elections_list[electionCount - 1];
 
-  //   res = await agent.get(`/listofelections/${electionlist.id}`);
-  //   const token = extractCsrfToken(res);
+    res = await agent.get(`/listofelections/${electionlist.id}`);
+    const token = extractCsrfToken(res);
 
-  //   const result = await agent.get(`/election/${electionlist.id}/launch`).send({
-  //     _csrf: token,
-  //   });
+    const result = await agent.get(`/election/${electionlist.id}/launch`).send({
+      _csrf: token,
+    });
 
-  //   expect(result.statusCode).toBe(302);
-  // });
+    expect(result.statusCode).toBe(302);
+  });
 });

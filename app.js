@@ -101,7 +101,7 @@ passport.deserializeUser((id, done) => {
       .catch((error) => {
         done(error, null);
       });
-  } else if (id.role === "voters") {
+  } else if (id.case === "voters") {
     Voters.findByPk(id.id)
       .then((user) => {
         done(null, user);
@@ -185,6 +185,8 @@ app.get(
         console.log(error);
         return response.status(422).json(error);
       }
+    } else if (request.user.role === "voter") {
+      return response.redirect("/");
     }
   }
 );
@@ -224,11 +226,13 @@ app.post(
           publicurl: request.body.publicurl,
           adminID: request.user.id,
         });
-        response.redirect("/elections");
+        return response.redirect("/elections");
       } catch (error) {
         console.log(error);
         return response.status(422).json(error);
       }
+    } else if (request.user.role === "voter") {
+      return response.redirect("/");
     }
   }
 );
@@ -827,24 +831,26 @@ app.get(
   async (request, response) => {
     try {
       const election = await Election.getElectionurl(request.params.publicurl);
-      if (election.launched) {
-        const question = await questions.retrievequestions(election.id);
-        let optionsnew = [];
-        for (let i = 0; i < question.length; i++) {
-          const optionlist = await options.retrieveoptions(question[i].id);
-          optionsnew.push(optionlist);
-        }
+      if (request.user.case === "voters") {
+        if (election.launched) {
+          const question = await questions.retrievequestions(election.id);
+          let optionsnew = [];
+          for (let i = 0; i < question.length; i++) {
+            const optionlist = await options.retrieveoptions(question[i].id);
+            optionsnew.push(optionlist);
+          }
 
-        return response.render("voterview", {
-          id: election.id,
-          title: election.electionName,
-          electionID: election.id,
-          question,
-          optionsnew,
-          csrfToken: request.csrfToken(),
-        });
-      } else {
-        return response.render("invalid");
+          return response.render("voterview", {
+            id: election.id,
+            title: election.electionName,
+            electionID: election.id,
+            question,
+            optionsnew,
+            csrfToken: request.csrfToken(),
+          });
+        } else {
+          return response.render("invalid");
+        }
       }
     } catch (error) {
       console.log(error);
