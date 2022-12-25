@@ -158,7 +158,10 @@ app.get(
   "/index",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    response.render("index", { csrfToken: request.csrfToken() });
+    response.render("index", {
+      title: "Online Voting interface",
+      csrfToken: request.csrfToken(),
+    });
   }
 );
 
@@ -167,7 +170,8 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
-      let loggedinuser = request.user.firstName + " " + request.user.lastName;
+      let user = await Admin.findByPk(request.user.id);
+      let loggedinuser = user.dataValues.firstName;
       try {
         const elections_list = await Election.getElections(request.user.id);
         if (request.accepts("html")) {
@@ -190,18 +194,6 @@ app.get(
     }
   }
 );
-// app.get(
-//   "/election",
-//   connectEnsureLogin.ensureLoggedIn(),
-//   async (request, response) => {
-//     const loggedInAdminID = request.user.id;
-//     const elections = await Election.findAll({
-//       where: { adminID: loggedInAdminID },
-//     });
-
-//     return response.json({ elections });
-//   }
-// );
 app.get(
   "/create",
   connectEnsureLogin.ensureLoggedIn(),
@@ -220,6 +212,15 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
+      if (request.body.electionName.length === 0) {
+        request.flash("error", "election name can not be empty!!");
+        return response.redirect("/create");
+      }
+      if (request.body.publicurl.length === 0) {
+        request.flash("error", "public url can not be empty!!");
+        return response.redirect("/create");
+      }
+
       try {
         await Election.addElections({
           electionName: request.body.electionName,
@@ -268,6 +269,22 @@ app.get("/login", (request, response) => {
 });
 
 app.post("/admin", async (request, response) => {
+  if (request.body.email.length == 0) {
+    request.flash("error", "email can not be empty!!");
+    return response.redirect("/signup");
+  }
+  if (request.body.firstName.length == 0) {
+    request.flash("error", "firstname can not be empty!!");
+    return response.redirect("/signup");
+  }
+  if (request.body.password.length == 0) {
+    request.flash("error", "password can not be empty!!");
+    return response.redirect("/signup");
+  }
+  if (request.body.password.length <= 5) {
+    request.flash("error", "password length should be minimum of length 5!!");
+    return response.redirect("/signup");
+  }
   const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
   try {
     const user = await Admin.create({
@@ -285,6 +302,8 @@ app.post("/admin", async (request, response) => {
       }
     });
   } catch (error) {
+    console.log(error);
+    request.flash("error", "User Already Exist with this mail!!");
     return response.redirect("/signup");
   }
 });
@@ -297,6 +316,7 @@ app.get(
         const voter = await Voters.retrivevoters(request.params.id);
         const question = await questions.retrievequestion(request.params.id);
         const election = await Election.findByPk(request.params.id);
+        // eslint-disable-next-line no-unused-vars
         const electionname = await Election.getElections(
           request.params.id,
           request.user.id
@@ -311,7 +331,7 @@ app.get(
           voters: voter,
           questions: question,
           id: request.params.id,
-          title: electionname.electionName,
+          title: election.electionName,
           countquestions: countofquestions,
           countvoters: countofvoters,
         });
@@ -327,6 +347,7 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
+      // eslint-disable-next-line no-unused-vars
       const electionlist = await Election.getElections(
         request.params.id,
         request.user.id
@@ -342,7 +363,7 @@ app.get(
       }
       if (request.accepts("html")) {
         response.render("questions", {
-          title: electionlist.electionName,
+          title: election.electionName,
           id: request.params.id,
           questions: questions1,
           election: election,
@@ -374,6 +395,10 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
+      if (!request.body.questionname) {
+        request.flash("error", "Question can not be empty!!");
+        return response.redirect(`/questionscreate/${request.params.id}`);
+      }
       try {
         const question = await questions.addquestion({
           electionID: request.params.id,
@@ -656,6 +681,18 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
+      if (request.body.voterid.length == 0) {
+        request.flash("error", "Voter ID Can not be null!!");
+        return response.redirect(`/createvoter/${request.params.id}`);
+      }
+      if (request.body.password.length == 0) {
+        request.flash("error", "Password can not be empty!!");
+        return response.redirect(`/createvoter/${request.params.id}`);
+      }
+      if (request.body.password.length <= 3) {
+        request.flash("error", "Password length can not be less than three!!");
+        return response.redirect(`/createvoter/${request.params.id}`);
+      }
       const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
       try {
         await Voters.add(request.body.voterid, hashedPwd, request.params.id);

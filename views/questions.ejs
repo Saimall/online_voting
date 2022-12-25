@@ -24,25 +24,33 @@
     </script>
     <title><%= title %></title>
 </head>
-<body>
+<body style="background-color: cornsilk;">
     <%- include('heading.ejs') %>
             <div class="grid grid-cols-6">
                 <div class="col-start-3 col-span-2">
-            <h5 class="text-2xl"><%= title %> list-of-questions</h5>
+                <b>
+            <h5 class="text-2xl"><%= title %> Questions List</h5>
+        </b>
                 </div>
             </div>
-            <div class="bg-black-600 px-2 py-1 hover:bgblack-600">
+            <b>
+            <div class="bg-black-600 px-3 py-1 hover:bgblack-600">
                 <a href="/questionscreate/<%= id %>" class="text-black-600">create a new question</a>
             </div>
+        </b>
+        <b>
             <div>
                  <a href="/listofelections/<%=id%>" class="text-black-600">GO BACK</a>
             </div>
+        </b>
         </div>
         <div class="flex-auto">
             <div class="mx-4">  
                 <div class="grid grid-cols-6">
                     <div class="col-start-3 col-span-2">
+                        <b>
                 <p class="text-black-600"><%= (questions.length==0)?"You did not added any questions !!":"" %></p>
+                        </b>
                 <ol class="list-decimal" type="1">
                     <% for (let i=0; i<questions.length; i++) { %>
                         <li>

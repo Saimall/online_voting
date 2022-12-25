@@ -20,25 +20,25 @@
                     <tr>
                        <td>
                         <label for="firstName" >First name</label>
-                    <input id="firstName" name="firstName" type="text" placeholder="First name" class="border border-gray-300 text-gray-900 rounded p-2 w-full" required>  
+                    <input id="firstName" name="firstName" type="text" placeholder="First name" class="border border-gray-300 text-gray-900 rounded p-2 w-full">  
                 </td>
                 </tr>
                 <tr>
                     <td>
                     <label for="lastName">Last name</label>
-                    <input id="lastName" name="lastName" type="text" placeholder="Last name" class="border border-gray-300 text-gray-900 rounded p-2 w-full" required>
+                    <input id="lastName" name="lastName" type="text" placeholder="Last name" class="border border-gray-300 text-gray-900 rounded p-2 w-full" >
                 </td>
                 </tr>
                 <tr>
                     <td>
                    <label for="email" >Email</label>
-                    <input id="email" name="email" type="email" placeholder="Email"  class="border border-gray-300 text-gray-900 rounded p-2 w-full" required>
+                    <input id="email" name="email" type="email" placeholder="Email"  class="border border-gray-300 text-gray-900 rounded p-2 w-full" >
                 </td>
                 </tr>
                 <tr>
                     <td>
                     <label for="password" >Password</label>
-                    <input id="password" name="password" type="password" placeholder="Password" class="border w-full h-5 px-3 py-5 mt-2 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md" required>
+                    <input id="password" name="password" type="password" placeholder="Password" class="border w-full h-5 px-3 py-5 mt-2 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md">
                 </td>
                 </tr>
                 <tr>
@@ -54,9 +54,13 @@
                 </table>
                 </div> 
                 </form>
-                    
-            
-                
+                <% if(messages && messages.error && messages.error.length > 0)  { %>
+                    <% for(var i=0; i<messages.error.length; i++) { %>
+                           <div class="bg-red-300 text-red-900 p-2 rounded-lg shadow">
+                            <li> <%= messages.error[i] %></li>
+                           </div>
+                    <% } %>
+                  <% } %>      
             </div>
         </table>
             

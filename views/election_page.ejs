@@ -11,14 +11,27 @@
 
     <%- include('heading.ejs') %>
     <div>
+       <b>
+        <a href="/elections" class="text-black-600">GO BACK</a>
+    </b>
+   </div>
+    <div>
         <% if (election.ended) { %>
-            <div class="flex justify-center items-center mt-4 p-2 gap-2 text-blackfont-bold">
+            <b>
+            <div class="bg-red-300 text-red-900 p-2 rounded-lg shadow">
+                <center>
               Election Ended
+            </center>
             </div>
+        </b>
           <% } else if (election.launched) { %>
-            <div class="flex justify-center items-center mt-4 p-2 gap-2 text-blackfont-bold">
+            <b>
+            <div class="bg-red-300 text-red-900 p-2 rounded-lg shadow">
+                <center>
                Election is Live
+            </center>
             </div>
+           </b>
             <div>
             <b> Voter can visit this link to cast their Vote :</b>
             <a href="/externalpage/<%=publicurl%>" class="py-1 hover:text-purple-blue text-blue-600">https://localhost:7000/externalpage/<%=publicurl%></a>
@@ -26,18 +39,28 @@
             <% } %>
     </div>
     <div>
-        
+        <center>
+            <div>
+                <% if (messages && messages.error && messages.error.length > 0) { %>
+                    <% for(var i=0; i<messages.error.length; i++) { %>
+                        <b>
+                        <p class="bg-red-300 text-red-900 p-2 rounded-lg shadow"><%= messages.error[i] %></p>
+                        </b>
+                    <% } %>
+                <% } %>
+            </div>
+        </center>
     </div>
     </div>
     <div class="grid grid-cols-6">
         <div class="col-start-3 col-span-2">
-        <h3 class="text-4xl my-4 font-medium"><%= title %></h3>
+        <h3 class="text-2xl my-4 font-medium"><%= title %> Election Page</h3>
         <div class="my-8">
-            <h2 class="my-2 text-lg text-black flex gap-1">your election has <span class="text-black-600"> <%= countquestions %> </span> questions</h2>
+            <h2 class="my-2 text-lg text-black flex gap-1"> election has <span class="text-black-600"> <%= countquestions %> </span> questions</h2>
             <a href="/questions/<%= id %>" class="py-1 hover:text-black-800 text-black-600">Manage questions</a>
         </div>
         <div class="my-8">
-            <h2 class="my-2 text-lg text-black flex gap-1">your election has <span class="text-black-600"> <%= countvoters %> </span>  voters</h2>
+            <h2 class="my-2 text-lg text-black flex gap-1"> election has <span class="text-black-600"> <%= countvoters %> </span>  voters</h2>
             <a href="/voters/<%=id %>" class="py-1 hover:text-black-800 text-black-600">Manage voters</a>
         </div>
         <div>
@@ -57,17 +80,6 @@
         </div>
         </div>
         </div>
-        <center>
-        <div>
-            <% if (messages && messages.error && messages.error.length > 0) { %>
-                <% for(var i=0; i<messages.error.length; i++) { %>
-                    <b>
-                    <p class="bg-black-100 my-3 list-none rounded-md px-4 py-2"><%= messages.error[i] %></p>
-                    </b>
-                <% } %>
-            <% } %>
-        </div>
-    </center>
     </div>
     <div class="grid grid-cols-6">
         <div class="col-start-3 col-span-2">
