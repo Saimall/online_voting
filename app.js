@@ -428,7 +428,7 @@ app.get(
         const option = await options.retrieveoptions(request.params.questionID);
         if (request.accepts("html")) {
           response.render("questiondisplay", {
-            title: question.question,
+            title: question.questionname,
             description: question.description,
             id: request.params.id,
             questionID: request.params.questionID,
@@ -468,13 +468,19 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
+      if (!request.body.optionname) {
+        request.flash("error", "Option can not be empty");
+        return response.redirect(
+          `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options`
+        );
+      }
       try {
         await options.addoption({
           optionname: request.body.optionname,
           questionID: request.params.questionID,
         });
         return response.redirect(
-          `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options`
+          `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options/`
         );
       } catch (error) {
         console.log(error);
@@ -582,6 +588,7 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
+      // eslint-disable-next-line no-unused-vars
       const electionlist = await Election.getElections(
         request.params.id,
         request.user.id
@@ -590,7 +597,7 @@ app.get(
       const election = await Election.findByPk(request.params.id);
       if (request.accepts("html")) {
         response.render("voters", {
-          title: electionlist.electionName,
+          title: election.electionName,
           id: request.params.id,
           voters: voterlist,
           election: election,
@@ -689,7 +696,7 @@ app.post(
         request.flash("error", "Password can not be empty!!");
         return response.redirect(`/createvoter/${request.params.id}`);
       }
-      if (request.body.password.length <= 3) {
+      if (request.body.password.length < 3) {
         request.flash("error", "Password length can not be less than three!!");
         return response.redirect(`/createvoter/${request.params.id}`);
       }
@@ -878,6 +885,7 @@ app.get(
           }
 
           return response.render("voterview", {
+            publicurl: request.params.publicurl,
             id: election.id,
             title: election.electionName,
             electionID: election.id,

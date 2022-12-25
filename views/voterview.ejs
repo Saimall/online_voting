@@ -13,11 +13,22 @@
    <body >
     <div class=" flex text-gray-800 flex-col  overflow-hidden bg-gray-50 py-6 sm:py-12 px-20" style="background-color: cornsilk">
         <div class="w-full">
+            <div class="w-auto">
+        <ul class="flex-auto">
+          <li>
+            <a href="/externalpage/<%=publicurl%>" class="text-white bg-red-600 hover:bg-red-800 font-medium rounded px-5 py-2">Sign out</a>
+          </li>
+        </ul>
+      </div>
             <center>
-                <span class="text-4xl font-light "><%= title %></span>
+                <b>
+                <span class="text-4xl font-dark"><%= title %></span>
+            </b>
             </center>
             <div>
-            <h3 class="px-4 py-2 text-2xl font-light ">Check the below questions and Answer</h3>
+                <b>
+            <h3 class="px-4 py-2 text-2xl font-semidark ">Check the below questions and Answer</h3>
+                </b>
                     <div class="pb-2 px-8">
                         <form action="" class="divide-y divide-solid">
                             <ol class="list-decimal mb-5">

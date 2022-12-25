@@ -25,9 +25,11 @@
     <link rel="stylesheet" href="./css/style.css">
     <title><%= title %></title>
 </head>
-<body>
+<body style="background-color: cornsilk;">
     <%- include('heading.ejs') %>
+    <b>
     <a href="/questions/<%= id%>">questionpage</a>
+   </b>
     <div class="grid grid-cols-6">
         <div class="col-start-2 col-span-4">
             
@@ -59,15 +61,28 @@
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <div class="flex gap-2 py-4">
                     <div class="flex-auto">
-                        <input type="text" name="optionname" placeholder="Enter an option" class="border border-gray-300 text-gray-900 w-full rounded p-2 " required />
+                        <input type="text" name="optionname" placeholder="Enter an option" class="border border-gray-500 text-gray-900 w-full rounded p-2 ">
                     </div>
                     <div class="flex-none">
-                        <button type="submit" class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-3 py-1">Add option</button>
+                        <button type="submit" class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-3 py-2">Add option</button>
                     </div>
                 </div>
             </form>
+            <b>
             <p class=" justify-center" align="center"><%= (option.length==0)?"No options are added yet!!":"" %></p>
-        </div>
+        </b>
+        </div> 
     </div>
+    <% if(messages && messages.error && messages.error.length > 0)  { %>
+        <% for(var i=0; i<messages.error.length; i++) { %>
+               <div class="bg-red-300 text-red-900 p-2 rounded-lg shadow">
+                <center>
+                    <b>
+                <li> <%= messages.error[i] %></li>
+            </b>
+            </center>
+               </div>
+        <% } %>
+      <% } %>    
 </body>
 </html>
