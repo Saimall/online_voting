@@ -93,22 +93,28 @@ passport.serializeUser((user, done) => {
   done(null, { id: user.id, case: user.case });
 });
 passport.deserializeUser((id, done) => {
-  if (id.case === "admins") {
-    Admin.findByPk(id.id)
-      .then((user) => {
-        done(null, user);
-      })
-      .catch((error) => {
-        done(error, null);
-      });
-  } else if (id.case === "voters") {
-    Voters.findByPk(id.id)
-      .then((user) => {
-        done(null, user);
-      })
-      .catch((error) => {
-        done(error, null);
-      });
+  switch (id.case) {
+    case "admins":
+      Admin.findByPk(id.id)
+        .then((user) => {
+          done(null, user);
+        })
+        .catch((error) => {
+          done(error, null);
+        });
+      break;
+    case "voters":
+      Voters.findByPk(id.id)
+        .then((user) => {
+          done(null, user);
+        })
+        .catch((error) => {
+          done(error, null);
+        });
+      break;
+    default:
+      done(new Error("no entity type:", id.case), null);
+      break;
   }
 });
 app.set("view engine", "ejs");
