@@ -841,25 +841,10 @@ app.get(
 app.get("/externalpage/:publicurl", async (request, response) => {
   try {
     const election = await Election.getElectionurl(request.params.publicurl);
-    if (election.launched) {
-      const question = await questions.retrievequestions(election.id);
-      let optionsnew = [];
-      for (let i = 0; i < question.length; i++) {
-        const optionlist = await options.retrieveoptions(question[i].id);
-        optionsnew.push(optionlist);
-      }
-      return response.render("voterlogin", {
-        publicurl: election.publicurl,
-        id: election.id,
-        title: election.electionName,
-        electionID: election.id,
-        question,
-        optionsnew,
-        csrfToken: request.csrfToken(),
-      });
-    } else {
-      return response.render("invalid");
-    }
+    return response.render("voterlogin", {
+      publicurl: election.publicurl,
+      csrfToken: request.csrfToken(),
+    });
   } catch (error) {
     console.log(error);
     return response.status(422).json(error);
