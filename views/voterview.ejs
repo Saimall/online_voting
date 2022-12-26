@@ -31,6 +31,7 @@
                 </b>
                     <div class="pb-2 px-8">
                         <form action="" class="divide-y divide-solid">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                             <ol class="list-decimal mb-5">
                                 <% for(let i=0; i<question.length; i++) { %>
                                     <li class="my-3">
