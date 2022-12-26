@@ -13,7 +13,7 @@
             <b>
             <span class="text-2xl font-light ">Login to your account</span>
         </b>
-            <div>
+            <div> 
             </div>
             <div class="mt-4 bg-white shadow-md rounded-lg text-left" style="background-color: cornsilk;">
     
@@ -21,19 +21,27 @@
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                     <div>
                     <label for="email"  class="border border-gray-300 text-gray-900 rounded ">Email</label>
-                    <input id="email" name="email" type="email" placeholder="email" class="border border-gray-300 text-gray-900 rounded p-2 w-full" required>
+                    <input id="email" name="email" type="email" placeholder="email" class="border border-gray-300 text-gray-900 rounded p-2 w-full" >
                     </div>
                     <div>
                     <label for="password" class="border border-gray-300 text-gray-900 rounded ">Password</label>
-                    <input id="password" name="password" type="password" placeholder="password" class="border border-gray-300 text-gray-900 rounded p-2 w-full" required>
+                    <input id="password" name="password" type="password" placeholder="password" class="border border-gray-300 text-gray-900 rounded p-2 w-full">
                     </div>
                     <div class="py-3"> 
                         <button type="submit" class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">Sign in</button>        
                      </div> 
                 </form>
             </div>
-
         </div>
+        <% if(messages && messages.error && messages.error.length > 0)  { %>
+            <% for(var i=0; i<messages.error.length; i++) { %>
+                   <div class="bg-red-300 text-red-900 p-2 rounded-lg shadow">
+                    <center>
+                    <li> <%= messages.error[i] %></li>
+                </center>
+                   </div>
+            <% } %>
+          <% } %>
     </div>
 </body>
 </html>

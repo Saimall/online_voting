@@ -51,11 +51,11 @@ passport.use(
           if (result) {
             return done(null, user);
           } else {
-            return done(null, false, { message: "Invalid password" });
+            return done(null, false, { message: "Invalid Password!!!" });
           }
         })
         .catch(() => {
-          return done(null, false, { message: "Invalid Email-ID" });
+          return done(null, false, { message: "Invalid Email-ID!!!!" });
         });
     }
   )
@@ -79,8 +79,7 @@ passport.use(
             return done(null, false, { message: "Invalid password" });
           }
         })
-        .catch((error) => {
-          console.log(error);
+        .catch(() => {
           return done(null, false, {
             message: "invalid",
           });
@@ -120,8 +119,8 @@ app.post(
     failureRedirect: "/login",
     failureFlash: true,
   }),
-  (request, response) => {
-    response.redirect("/elections");
+  async (request, response) => {
+    return response.redirect("/elections");
   }
 );
 
