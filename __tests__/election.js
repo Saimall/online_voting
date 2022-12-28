@@ -584,4 +584,36 @@ describe("Online election test suite ", function () {
 
     expect(result.statusCode).toBe(302);
   });
+
+  test("testing voter login", async () => {
+    const agent = request.agent(server);
+    await login(agent, "sai@test.com", "12345678");
+
+    let res = await agent.get("/create");
+    csrfToken = extractCsrfToken(res);
+    await agent.post("/elections").send({
+      electionName: "Election1",
+      publicurl: "url18",
+      _csrf: csrfToken,
+    });
+    const ElectionsResponse = await agent
+      .get("/elections")
+      .set("Accept", "Application/json");
+    const parsedElectionsResponse = JSON.parse(ElectionsResponse.text);
+    const electionCount = parsedElectionsResponse.elections_list.length;
+    const electionlist =
+      parsedElectionsResponse.elections_list[electionCount - 1];
+
+    await agent.get("/signout");
+    const voterview = await agent.get(
+      `/externalpage/${electionlist.publicurl}`
+    );
+    const csrf = extractCsrfToken(voterview);
+    res = await agent.post(`/vote/${electionlist.publicurl}`).send({
+      VoterID: "123456",
+      password: "15678",
+      _csrf: csrf,
+    });
+    expect(res.statusCode).toBe(302);
+  });
 });
