@@ -87,7 +87,8 @@ passport.use(
     }
   )
 );
-
+app.set("view engine", "ejs");
+app.use(express.static(path.join(__dirname, "public")));
 passport.serializeUser((user, done) => {
   done(null, { id: user.id, case: user.case });
 });
@@ -110,8 +111,6 @@ passport.deserializeUser((id, done) => {
       });
   }
 });
-app.set("view engine", "ejs");
-app.use(express.static(path.join(__dirname, "public")));
 
 app.post(
   "/session",
@@ -127,6 +126,7 @@ app.post(
 app.post(
   "/vote/:publicurl",
   passport.authenticate("voter-local", {
+    failureRedirect: "back",
     failureFlash: true,
   }),
   async (request, response) => {
@@ -170,13 +170,13 @@ app.get(
   async (request, response) => {
     if (request.user.case === "admins") {
       let user = await Admin.findByPk(request.user.id);
-      let loggedinuser = user.dataValues.firstName;
+      let username = user.dataValues.firstName;
       try {
         const elections_list = await Election.getElections(request.user.id);
         if (request.accepts("html")) {
           response.render("elections", {
             title: "Online Voting interface",
-            userName: loggedinuser,
+            userName: username,
             elections_list,
           });
         } else {
@@ -249,9 +249,9 @@ app.get("/signup", (request, response) => {
 });
 
 app.get("/signout", (request, response, next) => {
-  request.logout((err) => {
-    if (err) {
-      return next(err);
+  request.logout((error) => {
+    if (error) {
+      return next(error);
     }
     response.redirect("/");
   });
@@ -312,9 +312,10 @@ app.get(
   async (request, response) => {
     if (request.user.case === "admins") {
       try {
+        const election = await Election.findByPk(request.params.id);
         const voter = await Voters.retrivevoters(request.params.id);
         const question = await questions.retrievequestion(request.params.id);
-        const election = await Election.findByPk(request.params.id);
+
         // eslint-disable-next-line no-unused-vars
         const electionname = await Election.getElections(
           request.params.id,
@@ -396,6 +397,10 @@ app.post(
     if (request.user.case === "admins") {
       if (!request.body.questionname) {
         request.flash("error", "Question can not be empty!!");
+        return response.redirect(`/questionscreate/${request.params.id}`);
+      }
+      if (request.body.questionname < 3) {
+        request.flash("error", "Question can not be less than 3 words!!");
         return response.redirect(`/questionscreate/${request.params.id}`);
       }
       try {
@@ -527,6 +532,15 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
+      if (request.body.questionname.length < 3) {
+        request.flash(
+          "error",
+          "Question can not be less than three characters"
+        );
+        return response.redirect(
+          `/elections/${request.params.electionID}/questions/${request.params.questionID}/modify`
+        );
+      }
       try {
         await questions.modifyquestion(
           request.body.questionname,
@@ -735,7 +749,7 @@ app.post(
       try {
         await Voters.modifypassword(
           request.params.voterID,
-          request.body.Voterpassword
+          request.body.password
         );
         response.redirect(`/voters/${request.params.electionID}`);
       } catch (error) {
