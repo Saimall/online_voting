@@ -56,6 +56,19 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
+
+    static votecompleted(id) {
+      return this.update(
+        {
+          voted: true,
+        },
+        {
+          where: {
+            id,
+          },
+        }
+      );
+    }
   }
   Voters.init(
     {

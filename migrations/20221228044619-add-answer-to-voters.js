@@ -3,18 +3,6 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn("answers", "VoterID", {
-      type: Sequelize.DataTypes.INTEGER,
-    });
-    await queryInterface.addConstraint("answers", {
-      fields: ["VoterID"],
-      type: "foreign key",
-      references: {
-        table: "Voters",
-        field: "id",
-      },
-    });
-
     await queryInterface.addColumn("answers", "ElectionID", {
       type: Sequelize.DataTypes.INTEGER,
     });
@@ -35,6 +23,17 @@ module.exports = {
       type: "foreign key",
       references: {
         table: "questions",
+        field: "id",
+      },
+    });
+    await queryInterface.addColumn("answers", "VoterID", {
+      type: Sequelize.DataTypes.INTEGER,
+    });
+    await queryInterface.addConstraint("answers", {
+      fields: ["VoterID"],
+      type: "foreign key",
+      references: {
+        table: "Voters",
         field: "id",
       },
     });

@@ -4,9 +4,9 @@ module.exports = (sequelize, DataTypes) => {
   class answers extends Model {
     static addResponse({ VoterID, ElectionID, QuestionID, chossedoption }) {
       return this.create({
-        VoterID,
         ElectionID,
         QuestionID,
+        VoterID,
         chossedoption,
       });
     }
@@ -17,14 +17,16 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      answers.belongsTo(models.Voters, {
-        foreignKey: "VoterID",
-      });
       answers.belongsTo(models.Election, {
         foreignKey: "ElectionID",
       });
+
       answers.belongsTo(models.questions, {
         foreignKey: "QuestionID",
+      });
+
+      answers.belongsTo(models.Voters, {
+        foreignKey: "VoterID",
       });
       answers.belongsTo(models.options, {
         foreignKey: "chossedoption",

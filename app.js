@@ -2,7 +2,14 @@ const express = require("express");
 const app = express();
 const csrf = require("tiny-csrf");
 const cookieParser = require("cookie-parser");
-const { Admin, Election, questions, options, Voters } = require("./models");
+const {
+  Admin,
+  Election,
+  questions,
+  options,
+  Voters,
+  Answers,
+} = require("./models");
 const bodyParser = require("body-parser");
 const connectEnsureLogin = require("connect-ensure-login");
 const LocalStratergy = require("passport-local");
@@ -81,7 +88,7 @@ passport.use(
         })
         .catch(() => {
           return done(null, false, {
-            message: "invalid",
+            message: "invalid ID",
           });
         });
     }
@@ -864,6 +871,13 @@ app.get("/externalpage/:publicurl", async (request, response) => {
   }
 });
 app.get("/vote/:publicurl", async (request, response) => {
+  if (request.user === false) {
+    request.flash("error", "Kindly login before casting vote");
+    return response.redirect(`/externalpage/${request.params.publicurl}`);
+  }
+  if (request.user.voted) {
+    return response.render("finalpage");
+  }
   try {
     const election = await Election.getElectionurl(request.params.publicurl);
     if (request.user.case === "voters") {
@@ -887,7 +901,35 @@ app.get("/vote/:publicurl", async (request, response) => {
       } else {
         return response.render("invalid");
       }
+    } else if (request.user.case === "admins") {
+      request.flash(
+        "error",
+        "Ooopss!! You can not vote as admin Signout as admin to vote.!!"
+      );
+      return response.redirect(`/lisofelections/${election.id}`);
     }
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+
+app.post("/:electionID/externalpage/:publicurl", async (request, response) => {
+  try {
+    let election = await Election.findByPk(request.params.electionID);
+    let questionslist = await questions.retrievequestion(election.id);
+    for (let i = 0; i < questionslist.length; i++) {
+      let questionid = `question-${questionslist[i].id}`;
+      let chossedoption = request.body[questionid];
+      await Answers.addResponse({
+        ElectionID: request.params.electionID,
+        QuestionID: questionslist[i].id,
+        VoterID: request.user.id,
+        chossedoption: chossedoption,
+      });
+    }
+    await Voters.votecompleted(request.user.id);
+    return response.redirect(`/vote/${request.params.publicurl}`);
   } catch (error) {
     console.log(error);
     return response.status(422).json(error);
