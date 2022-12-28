@@ -32,6 +32,16 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
+
+    static findquestion(electionID, questionname) {
+      return this.findOne({
+        where: {
+          questionname: questionname,
+          electionID: electionID,
+        },
+      });
+    }
+
     static modifyquestion(questionname, desctiption, questionID) {
       return this.update(
         {

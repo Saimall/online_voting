@@ -130,17 +130,6 @@ app.post(
   }
 );
 
-app.post(
-  "/vote/:publicurl",
-  passport.authenticate("voter-local", {
-    failureRedirect: "back",
-    failureFlash: true,
-  }),
-  async (request, response) => {
-    return response.redirect(`/vote/${request.params.publicurl}`);
-  }
-);
-
 app.get("/", (request, response) => {
   if (request.user) {
     if (request.user.case === "admins") {
@@ -410,6 +399,16 @@ app.post(
         request.flash("error", "Question can not be less than 3 words!!");
         return response.redirect(`/questionscreate/${request.params.id}`);
       }
+
+      const questionexist = await questions.findquestion(
+        request.params.id,
+        request.body.questionname
+      );
+      if (questionexist) {
+        request.flash("error", "Sorry!! the question already used");
+        return response.redirect(`/questionscreate/${request.params.id}`);
+      }
+
       try {
         const question = await questions.addquestion({
           electionID: request.params.id,
@@ -485,6 +484,15 @@ app.post(
           `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options`
         );
       }
+
+      // const optionexist = await  options.findoption(request.params.questionID,request.body.optionname);
+      // console.log(optionexist)
+      // if(optionexist){
+      //   request.flash("error","Ooopss!! you already added this option.");
+      //   return response.redirect(
+      //     `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options`
+      //   );
+      // }
       try {
         await options.addoption({
           optionname: request.body.optionname,
@@ -544,6 +552,16 @@ app.post(
           "error",
           "Question can not be less than three characters"
         );
+        return response.redirect(
+          `/elections/${request.params.electionID}/questions/${request.params.questionID}/modify`
+        );
+      }
+      const questionexist = await questions.findquestion(
+        request.params.electionID,
+        request.body.questionname
+      );
+      if (questionexist) {
+        request.flash("error", "Sorry!! the question already used");
         return response.redirect(
           `/elections/${request.params.electionID}/questions/${request.params.questionID}/modify`
         );
@@ -704,6 +722,17 @@ app.get(
 );
 
 app.post(
+  "/vote/:publicurl",
+  passport.authenticate("voter-local", {
+    failureRedirect: "back",
+    failureFlash: true,
+  }),
+  async (request, response) => {
+    return response.redirect(`/vote/${request.params.publicurl}`);
+  }
+);
+
+app.post(
   "/createvoter/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
@@ -726,7 +755,12 @@ app.post(
         return response.redirect(`/voters/${request.params.id}`);
       } catch (error) {
         console.log(error);
-        return response.status(422).json(error);
+        request.flash(
+          "error",
+          "Sorry!! It Seems like VoterID is already in Use"
+        );
+        request.flash("error", "Kindly Use different VoterID");
+        return response.redirect(`/createvoter/${request.params.id}`);
       }
     }
   }

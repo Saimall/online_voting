@@ -48,6 +48,13 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
+    static findoption({ questionID, optionname }) {
+      return this.findOne({
+        questionID,
+        optionname,
+      });
+    }
+
     static associate(models) {
       options.belongsTo(models.questions, {
         foreignKey: "questionID",
