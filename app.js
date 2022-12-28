@@ -876,6 +876,7 @@ app.get("/vote/:publicurl", async (request, response) => {
     return response.redirect(`/externalpage/${request.params.publicurl}`);
   }
   if (request.user.voted) {
+    request.flash("error", "Kindly login before casting vote");
     return response.render("finalpage");
   }
   try {
