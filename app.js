@@ -912,11 +912,6 @@ app.get("/vote/:publicurl/", async (request, response) => {
   const election = await Election.getElectionurl(request.params.publicurl);
 
   if (request.user.voted && election.launched) {
-    request.flash(
-      "error",
-      "Ooopss!! Seems that You have Already Casted a Vote"
-    );
-    request.flash("error", "Kindly Await For the Result");
     return response.redirect(`/vote/${request.params.publicurl}/endpage`);
   }
 
