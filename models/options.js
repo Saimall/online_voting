@@ -22,10 +22,10 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
-    static modifyoption(newValue, id) {
+    static modifyoption(optionname, id) {
       return this.update(
         {
-          optionname: newValue,
+          optionname: optionname,
         },
         {
           where: {
@@ -48,9 +48,8 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    static findoption({ questionID, optionname }) {
+    static findoption({ optionname }) {
       return this.findOne({
-        questionID,
         optionname,
       });
     }
