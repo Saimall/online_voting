@@ -909,10 +909,15 @@ app.get("/vote/:publicurl/", async (request, response) => {
     request.flash("error", "Kindly login before casting vote");
     return response.redirect(`/externalpage/${request.params.publicurl}`);
   }
+  const election = await Election.getElectionurl(request.params.publicurl);
 
-  if (request.user.voted) {
-    request.flash("error", "Kindly login before casting vote");
-    return response.render("finalpage");
+  if (request.user.voted && election.launched) {
+    request.flash(
+      "error",
+      "Ooopss!! Seems that You have Already Casted a Vote"
+    );
+    request.flash("error", "Kindly Await For the Result");
+    return response.redirect(`/vote/${request.params.publicurl}/endpage`);
   }
 
   try {
@@ -951,9 +956,9 @@ app.get("/vote/:publicurl/", async (request, response) => {
   }
 });
 
-// app.get("/vote/:publicurl/finalpage",async(request,response)=>{
-//   response.render("finalpage");
-// })
+app.get("/vote/:publicurl/endpage", async (request, response) => {
+  response.render("endpage");
+});
 
 app.post("/:electionID/externalpage/:publicurl", async (request, response) => {
   try {
@@ -970,7 +975,7 @@ app.post("/:electionID/externalpage/:publicurl", async (request, response) => {
       });
     }
     await Voters.votecompleted(request.user.id);
-    return response.redirect(`/vote/${request.params.publicurl}`);
+    return response.render("finalpage");
   } catch (error) {
     console.log(error);
     return response.status(422).json(error);

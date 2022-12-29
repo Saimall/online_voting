@@ -29,7 +29,6 @@ module.exports = (sequelize, DataTypes) => {
         order: [["id", "ASC"]],
       });
     }
-
     static getElection(adminID) {
       return this.findOne({
         where: {
