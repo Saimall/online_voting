@@ -484,15 +484,14 @@ app.post(
           `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options`
         );
       }
-
-      // const optionexist = await  options.findoption(request.params.questionID,request.body.optionname);
-      // console.log(optionexist)
-      // if(optionexist){
-      //   request.flash("error","Ooopss!! you already added this option.");
-      //   return response.redirect(
-      //     `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options`
-      //   );
-      // }
+      // const optionexist = await  options.findoption(request.body.optionname);
+      //   console.log(optionexist)
+      //   if(optionexist){
+      //     request.flash("error","Ooopss!! you already added this option.");
+      //     return response.redirect(
+      //       `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options`
+      //     );
+      //   }
       try {
         await options.addoption({
           optionname: request.body.optionname,
@@ -773,9 +772,10 @@ app.get(
     if (request.user.case === "admins") {
       const election = await Election.findByPk(request.params.electionID);
       const voter = await Voters.findByPk(request.params.voterID);
+      console.log(voter);
       response.render("modifyvoters", {
-        election: election,
         voter: voter,
+        election: election,
         csrf: request.csrfToken(),
       });
     }
@@ -904,15 +904,17 @@ app.get("/externalpage/:publicurl", async (request, response) => {
     return response.status(422).json(error);
   }
 });
-app.get("/vote/:publicurl", async (request, response) => {
+app.get("/vote/:publicurl/", async (request, response) => {
   if (request.user === false) {
     request.flash("error", "Kindly login before casting vote");
     return response.redirect(`/externalpage/${request.params.publicurl}`);
   }
+
   if (request.user.voted) {
     request.flash("error", "Kindly login before casting vote");
     return response.render("finalpage");
   }
+
   try {
     const election = await Election.getElectionurl(request.params.publicurl);
     if (request.user.case === "voters") {
@@ -948,6 +950,10 @@ app.get("/vote/:publicurl", async (request, response) => {
     return response.status(422).json(error);
   }
 });
+
+// app.get("/vote/:publicurl/finalpage",async(request,response)=>{
+//   response.render("finalpage");
+// })
 
 app.post("/:electionID/externalpage/:publicurl", async (request, response) => {
   try {
