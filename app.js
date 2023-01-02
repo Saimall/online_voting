@@ -201,6 +201,9 @@ app.get(
         csrfToken: request.csrfToken(),
       });
     }
+    if (request.user.case === "voters") {
+      return response.redirect("/");
+    }
   }
 );
 
@@ -251,6 +254,7 @@ app.get("/signout", (request, response, next) => {
     if (error) {
       return next(error);
     }
+    request.flash("success", "Signout successfully!!");
     response.redirect("/");
   });
 });
@@ -295,6 +299,7 @@ app.post("/admin", async (request, response) => {
         console.log(err);
         response.redirect("/");
       } else {
+        request.flash("success", "Signup successfully!!");
         response.redirect("/elections");
       }
     });
@@ -889,10 +894,15 @@ app.get(
 
 app.get("/externalpage/:publicurl", async (request, response) => {
   try {
-    return response.render("voterlogin", {
-      publicurl: election.publicurl,
-      csrfToken: request.csrfToken(),
-    });
+    const election = await Election.getElectionurl(request.params.publicurl);
+    if (election.launched && !election.ended) {
+      return response.render("voterlogin", {
+        publicurl: election.publicurl,
+        csrfToken: request.csrfToken(),
+      });
+    } else {
+      response.render("resultpage");
+    }
   } catch (error) {
     console.log(error);
     return response.status(422).json(error);
