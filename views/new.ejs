@@ -29,14 +29,16 @@
                 </form> 
             </div>
         </div>
-        <% if(messages && messages.error && messages.error.length > 0)  { %>
-            <% for(var i=0; i<messages.error.length; i++) { %>
-                   <div class="bg-red-300 text-red-900 p-2 rounded-lg shadow">
-                    <li> <%= messages.error[i] %></li>
-                   </div>
-            <% } %>
-          <% } %> 
     </div>
+    <% if(messages && messages.error && messages.error.length > 0)  { %>
+        <% for(var i=0; i<messages.error.length; i++) { %>
+               <div class="bg-red-300 text-red-900 p-2 rounded-lg shadow">
+                <center>
+                <li><b> <%= messages.error[i] %></li></b>
+                </center>
+               </div>
+        <% } %>
+      <% } %> 
     </div>
 </body>
 </html>

@@ -229,8 +229,9 @@ app.post(
         });
         return response.redirect("/elections");
       } catch (error) {
+        request.flash("error", "URL is already Used!!");
         console.log(error);
-        return response.status(422).json(error);
+        return response.redirect("/create");
       }
     } else if (request.user.role === "voter") {
       return response.redirect("/");
