@@ -173,6 +173,7 @@ app.get(
         if (request.accepts("html")) {
           response.render("elections", {
             title: "Online Voting interface",
+            user,
             userName: username,
             elections_list,
           });
@@ -185,7 +186,7 @@ app.get(
         console.log(error);
         return response.status(422).json(error);
       }
-    } else if (request.user.role === "voter") {
+    } else if (request.user.case === "voter") {
       return response.redirect("/");
     }
   }
@@ -303,6 +304,7 @@ app.post("/admin", async (request, response) => {
     return response.redirect("/signup");
   }
 });
+
 app.get(
   "/listofelections/:id",
   connectEnsureLogin.ensureLoggedIn(),
@@ -887,7 +889,6 @@ app.get(
 
 app.get("/externalpage/:publicurl", async (request, response) => {
   try {
-    const election = await Election.getElectionurl(request.params.publicurl);
     return response.render("voterlogin", {
       publicurl: election.publicurl,
       csrfToken: request.csrfToken(),
@@ -897,6 +898,11 @@ app.get("/externalpage/:publicurl", async (request, response) => {
     return response.status(422).json(error);
   }
 });
+
+app.get("externalpage/:publicurl/resultpage", async (request, response) => {
+  response.render("resultpage");
+});
+
 app.get("/vote/:publicurl/", async (request, response) => {
   if (request.user === false) {
     request.flash("error", "Kindly login before casting vote");
@@ -1024,5 +1030,64 @@ app.get(
 //   }
 
 // })
+
+app.get(
+  "/adminpassword/reset",
+  connectEnsureLogin.ensureLoggedIn(),
+  (request, response) => {
+    if (request.user.case === "admins") {
+      response.render("adminpasswordreset", {
+        csrfToken: request.csrfToken(),
+      });
+    } else if (request.user.case == "voters") {
+      return response.redirect();
+    }
+  }
+);
+
+app.post(
+  "/adminpassword/reset",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "admins") {
+      if (!request.body.oldpassword) {
+        request.flash("error", "oldpassword field can not be empty!!");
+        return response.redirect("/adminpassword/reset");
+      }
+      if (!request.body.newpassword) {
+        request.flash("error", "newpassword field can not be empty!!");
+        return response.redirect("/adminpassword/reset");
+      }
+      if (request.body.newpassword.length <= 5) {
+        request.flash("error", "password should be minimum of 6 letters");
+        return response.redirect("/adminpassword/reset");
+      }
+      const hashnewpassword = await bcrypt.hash(
+        request.body.newpassword,
+        saltRounds
+      );
+      const compare = await bcrypt.compare(
+        request.body.oldpassword,
+        request.user.password
+      );
+
+      if (compare) {
+        try {
+          const admin = await Admin.findadmin(request.user.email);
+          if (admin) {
+            await Admin.updatepassword(hashnewpassword, admin.email);
+            request.flash("success", "Password changed successfully");
+            return response.redirect("/elections");
+          }
+        } catch (error) {
+          return response.status(422).json(error);
+        }
+      } else {
+        request.flash("error", "Kindly check the old password!!");
+        return response.redirect("/adminpassword/reset");
+      }
+    }
+  }
+);
 
 module.exports = app;

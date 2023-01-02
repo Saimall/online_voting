@@ -2,6 +2,25 @@
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Admin extends Model {
+    static updatepassword(password, email) {
+      return this.update(
+        {
+          password: password,
+        },
+        {
+          where: {
+            email: email,
+          },
+        }
+      );
+    }
+    static findadmin(email) {
+      return this.findOne({
+        where: {
+          email,
+        },
+      });
+    }
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
