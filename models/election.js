@@ -50,6 +50,7 @@ module.exports = (sequelize, DataTypes) => {
       return this.update(
         {
           launched: true,
+          ended: false,
         },
         {
           where: {
@@ -59,8 +60,9 @@ module.exports = (sequelize, DataTypes) => {
       );
     }
     static end(id) {
-      return this.Election.update(
+      return this.update(
         {
+          launched: false,
           ended: true,
         },
         {

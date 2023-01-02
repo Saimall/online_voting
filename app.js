@@ -20,6 +20,7 @@ const passport = require("passport");
 // eslint-disable-next-line no-unused-vars
 const { AsyncLocalStorage } = require("async_hooks");
 const flash = require("connect-flash");
+const election = require("./models/election");
 const saltRounds = 10;
 app.use(bodyParser.json());
 app.set("views", path.join(__dirname, "views"));
@@ -484,14 +485,6 @@ app.post(
           `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options`
         );
       }
-      // const optionexist = await  options.findoption(request.body.optionname);
-      //   console.log(optionexist)
-      //   if(optionexist){
-      //     request.flash("error","Ooopss!! you already added this option.");
-      //     return response.redirect(
-      //       `/displayelections/correspondingquestion/${request.params.id}/${request.params.questionID}/options`
-      //     );
-      //   }
       try {
         await options.addoption({
           optionname: request.body.optionname,
@@ -976,5 +969,60 @@ app.post("/:electionID/externalpage/:publicurl", async (request, response) => {
     return response.status(422).json(error);
   }
 });
+
+app.get(
+  "/election/:id/end",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "admins") {
+      try {
+        if (election.launched === false) {
+          request.flash("error", "election has not launched yet!!");
+          return response.redirect(`/listofelections/${request.params.id}`);
+        }
+        await Election.end(request.params.id);
+        return response.redirect(`/listofelections/${request.params.id}`);
+      } catch (error) {
+        console.log(error);
+        return response.send(error);
+      }
+    }
+  }
+);
+
+// app.get("/resultspage/:id/votersview",async(request,response)=>{
+
+//    const allquestions = await questions.retrievequestions(request.params.id);
+
+//    const allvoters = await Voters.retrivevoters(request.params.id);
+
+//    let votescount = 0;
+//    const totalvoterscount = allvoters.length;
+//    for(var i=0;i<totalvoterscount;i++){
+//       if(allvoters[i].voted === true){
+//          votescount= votescount+1;
+//       }
+//    }
+
+//   let  selectedcount = [];
+
+//   for(let i =0;i< allquestions.length;i++){
+//     let  question = [];
+
+//     const options = await options.retrieveoptions(allquestions[i].id);
+
+//     for(let i =0;i<options.length;i++){
+
+//       let specificcount = 0;
+
+//         for(let i=0;i<allvoters.length;i++){
+//              if(allvoters[i].)
+//         }
+
+//     }
+
+//   }
+
+// })
 
 module.exports = app;
