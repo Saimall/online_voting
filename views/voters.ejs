@@ -68,7 +68,7 @@
                                     </div>
                                      <% if((voters.length) >1) {%> 
                                     <div class="rounded w-fit px-2 py-1 flex gap-2 cursor-pointer hover:text-600">    
-                                        <a onclick="removevoter(<%= voters[i].id %>)" class="text-sm">delete voter</a>
+                                        <a onclick="removevoter(<%= voters[i].voterid %>)" class="text-sm">delete voter</a>
                                          <%} %>
                                        
                                     </div>
@@ -79,6 +79,7 @@
                 </ol>
             </div>
         </div>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
     </div>
 </body>
 </html>
