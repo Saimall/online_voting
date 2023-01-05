@@ -8,7 +8,7 @@ const {
   questions,
   options,
   Voters,
-  Answers,
+  answers,
 } = require("./models");
 const bodyParser = require("body-parser");
 const connectEnsureLogin = require("connect-ensure-login");
@@ -186,7 +186,7 @@ app.get(
         console.log(error);
         return response.status(422).json(error);
       }
-    } else if (request.user.case === "voter") {
+    } else if (request.user.case === "voters") {
       return response.redirect("/");
     }
   }
@@ -220,6 +220,10 @@ app.post(
         request.flash("error", "public url can not be empty!!");
         return response.redirect("/create");
       }
+      if (request.body.publicurl.includes(" ")) {
+        request.flash("error", "public url cannot containes spaces!!");
+        return response.redirect("/create");
+      }
 
       try {
         await Election.addElections({
@@ -233,7 +237,7 @@ app.post(
         console.log(error);
         return response.redirect("/create");
       }
-    } else if (request.user.role === "voter") {
+    } else if (request.user.role === "voters") {
       return response.redirect("/");
     }
   }
@@ -968,14 +972,17 @@ app.get("/vote/:publicurl/endpage", async (request, response) => {
 app.post("/:electionID/externalpage/:publicurl", async (request, response) => {
   try {
     let election = await Election.findByPk(request.params.electionID);
-    let questionslist = await questions.retrievequestion(election.id);
+    let questionslist = await questions.retrievequestions(election.id);
+    console.log(questionslist);
     for (let i = 0; i < questionslist.length; i++) {
-      let questionid = `question-${questionslist[i].id}`;
+      let questionid = `q-${questionslist[i].id}`;
+      console.log(questionid);
       let chossedoption = request.body[questionid];
-      await Answers.addResponse({
+      console.log(chossedoption);
+      await answers.addResponse({
         ElectionID: request.params.electionID,
-        QuestionID: questionslist[i].id,
-        VoterID: request.user.id,
+        questionID: questionslist[i].id,
+        voterid: request.user.id,
         chossedoption: chossedoption,
       });
     }
@@ -1006,42 +1013,6 @@ app.get(
     }
   }
 );
-
-// app.get("/resultspage/:id/votersview",async(request,response)=>{
-
-//    const allquestions = await questions.retrievequestions(request.params.id);
-
-//    const allvoters = await Voters.retrivevoters(request.params.id);
-
-//    let votescount = 0;
-//    const totalvoterscount = allvoters.length;
-//    for(var i=0;i<totalvoterscount;i++){
-//       if(allvoters[i].voted === true){
-//          votescount= votescount+1;
-//       }
-//    }
-
-//   let  selectedcount = [];
-
-//   for(let i =0;i< allquestions.length;i++){
-//     let  question = [];
-
-//     const options = await options.retrieveoptions(allquestions[i].id);
-
-//     for(let i =0;i<options.length;i++){
-
-//       let specificcount = 0;
-
-//         for(let i=0;i<allvoters.length;i++){
-//              if(allvoters[i].)
-//         }
-
-//     }
-
-//   }
-
-// })
-
 app.get(
   "/adminpassword/reset",
   connectEnsureLogin.ensureLoggedIn(),
@@ -1100,5 +1071,48 @@ app.post(
     }
   }
 );
+
+app.get("/results/externalpage/:publicurl", async (request, response) => {
+  try {
+    const election = await Election.getElectionurl(request.params.publicurl);
+    const questionslist = await questions.retrievequestions(election.id);
+    const answerslist = await answers.retriveanswers(election.id);
+    console.log(answerslist);
+    let valueoptions = [];
+    let numberofoptions = [];
+
+    for (var i = 0; i < questionslist.length; i++) {
+      let optionslist = await options.retrieveoptions(questionslist[i].id);
+      valueoptions.push(optionslist);
+      let answeroptions = [];
+      for (let i = 0; i < optionslist.length; i++) {
+        let answerslist = await answers.retrivecountoptions(
+          election.id,
+          optionslist[i].id,
+          questionslist[i].id
+        );
+        //console.log(answerslist)
+        answeroptions.push(answerslist);
+      }
+      numberofoptions.push(answeroptions);
+    }
+    const countvotepending = await Voters.votersnotvoted(election.id);
+    const countvoted = await Voters.votersvoted(election.id);
+    const allvoters = countvotepending + countvoted;
+
+    return response.render("resultpage", {
+      questionslist,
+      answerslist,
+      valueoptions,
+      numberofoptions,
+      countvoted,
+      countvotepending,
+      allvoters,
+    });
+  } catch (err) {
+    console.log(err);
+    return response.status(422).json(console.error);
+  }
+});
 
 module.exports = app;
