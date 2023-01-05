@@ -15,22 +15,22 @@ module.exports = {
       },
     });
 
-    await queryInterface.addColumn("answers", "QuestionID", {
+    await queryInterface.addColumn("answers", "questionID", {
       type: Sequelize.DataTypes.INTEGER,
     });
     await queryInterface.addConstraint("answers", {
-      fields: ["QuestionID"],
+      fields: ["questionID"],
       type: "foreign key",
       references: {
         table: "questions",
         field: "id",
       },
     });
-    await queryInterface.addColumn("answers", "VoterID", {
+    await queryInterface.addColumn("answers", "voterid", {
       type: Sequelize.DataTypes.INTEGER,
     });
     await queryInterface.addConstraint("answers", {
-      fields: ["VoterID"],
+      fields: ["voterid"],
       type: "foreign key",
       references: {
         table: "Voters",
@@ -40,6 +40,7 @@ module.exports = {
 
     await queryInterface.addColumn("answers", "chossedoption", {
       type: Sequelize.DataTypes.INTEGER,
+      allowNull: false,
     });
     await queryInterface.addConstraint("answers", {
       fields: ["chossedoption"],
@@ -65,9 +66,9 @@ module.exports = {
      * await queryInterface.dropTable('users');
      */
 
-    await queryInterface.removeColumn("answers", "VoterID");
+    await queryInterface.removeColumn("answers", "voterid");
     await queryInterface.removeColumn("answers", "ElectionID");
-    await queryInterface.removeColumn("answers", "QuestionID");
+    await queryInterface.removeColumn("answers", "questionID");
     await queryInterface.removeColumn("answers", "chossedoption");
   },
 };
