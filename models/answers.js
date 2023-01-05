@@ -2,12 +2,30 @@
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class answers extends Model {
-    static addResponse({ VoterID, ElectionID, QuestionID, chossedoption }) {
+    static addResponse({ voterid, ElectionID, questionID, chossedoption }) {
       return this.create({
         ElectionID,
-        QuestionID,
-        VoterID,
+        questionID,
+        voterid,
         chossedoption,
+      });
+    }
+
+    static retriveanswers(ElectionID) {
+      return this.findAll({
+        where: {
+          ElectionID,
+        },
+      });
+    }
+
+    static retrivecountoptions(chossedoption, ElectionID, questionID) {
+      return this.count({
+        where: {
+          chossedoption,
+          ElectionID,
+          questionID,
+        },
       });
     }
 
@@ -22,11 +40,11 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       answers.belongsTo(models.questions, {
-        foreignKey: "QuestionID",
+        foreignKey: "questionID",
       });
 
       answers.belongsTo(models.Voters, {
-        foreignKey: "VoterID",
+        foreignKey: "voterid",
       });
       answers.belongsTo(models.options, {
         foreignKey: "chossedoption",

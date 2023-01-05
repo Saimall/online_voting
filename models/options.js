@@ -1,5 +1,5 @@
 "use strict";
-const { Model } = require("sequelize");
+const { Model, Op } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class options extends Model {
     /**
@@ -58,6 +58,10 @@ module.exports = (sequelize, DataTypes) => {
       options.belongsTo(models.questions, {
         foreignKey: "questionID",
         onDelete: "CASCADE",
+      });
+
+      options.hasMany(models.answers, {
+        foreignKey: "chossedoption",
       });
     }
     // define association here

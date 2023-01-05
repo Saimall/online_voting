@@ -11,24 +11,28 @@ module.exports = (sequelize, DataTypes) => {
       Voters.belongsTo(models.Election, {
         foreignKey: "electionID",
       });
+
+      Voters.hasMany(models.answers, {
+        foreignKey: "voterid",
+      });
     }
-    static add(voterid, password, electionID) {
+    static add(Voterid, password, electionID) {
       return this.create({
-        voterid: voterid,
+        voterid: Voterid,
         voted: false,
         password: password,
         electionID: electionID,
       });
     }
 
-    static modifypassword(voterid, newpassword) {
+    static modifypassword(Voterid, newpassword) {
       return this.update(
         {
           password: newpassword,
         },
         {
           where: {
-            voterid: voterid,
+            voterid: Voterid,
           },
         }
       );
@@ -48,19 +52,35 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
-
-    static findVoter(voterID) {
-      return this.findOne({
+    static votersvoted(electionID) {
+      return this.count({
         where: {
-          voterid: voterID,
+          electionID,
+          voted: true,
         },
       });
     }
 
-    static delete(voterID) {
+    static votersnotvoted(electionID) {
+      return this.count({
+        where: {
+          electionID,
+          voted: false,
+        },
+      });
+    }
+    static findVoter(Voterid) {
+      return this.findOne({
+        where: {
+          voterid: Voterid,
+        },
+      });
+    }
+
+    static delete(voterid) {
       return this.destroy({
         where: {
-          id: voterID,
+          voterid: voterid,
         },
       });
     }
