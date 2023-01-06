@@ -975,7 +975,7 @@ app.post("/:electionID/externalpage/:publicurl", async (request, response) => {
     let questionslist = await questions.retrievequestions(election.id);
     console.log(questionslist);
     for (let i = 0; i < questionslist.length; i++) {
-      let questionid = `q-${questionslist[i].id}`;
+      let questionid = `question-${questionslist[i].id}`;
       console.log(questionid);
       let chossedoption = request.body[questionid];
       console.log(chossedoption);
@@ -1077,21 +1077,21 @@ app.get("/results/externalpage/:publicurl", async (request, response) => {
     const election = await Election.getElectionurl(request.params.publicurl);
     const questionslist = await questions.retrievequestions(election.id);
     const answerslist = await answers.retriveanswers(election.id);
-    console.log(answerslist);
     let valueoptions = [];
     let numberofoptions = [];
 
-    for (var i = 0; i < questionslist.length; i++) {
+    for (let i = 0; i < questionslist.length; i++) {
       let optionslist = await options.retrieveoptions(questionslist[i].id);
       valueoptions.push(optionslist);
       let answeroptions = [];
-      for (let i = 0; i < optionslist.length; i++) {
+      console.log();
+      for (let j = 0; j < optionslist.length; j++) {
         let answerslist = await answers.retrivecountoptions(
+          optionslist[j].id,
           election.id,
-          optionslist[i].id,
           questionslist[i].id
         );
-        //console.log(answerslist)
+        console.log(answerslist);
         answeroptions.push(answerslist);
       }
       numberofoptions.push(answeroptions);

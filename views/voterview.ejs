@@ -43,7 +43,7 @@
                                             <ol class="list-none">
                                                 <% for(let j=0; j<optionsnew[i].length; j++) { %>
                                                         <li class="option-item mt-2 cursor-pointer">
-                                                            <input type="radio" id="<%= optionsnew[i][j].id %>" class="cursor-pointer" name="answer-<%= question[i].id %>">
+                                                            <input type="radio" id="<%= optionsnew[i][j].id %>" class="cursor-pointer" name="question-<%= question[i].id %>" value="<%= optionsnew[i][j].id%>">
                                                             <label class="px-1 my-2 cursor-pointer" for="<%= optionsnew[i][j].id %>" class="ml-2 text-lg "><%= optionsnew[i][j].optionname %></label>
                                                         </li>
                                                 <% } %>
