@@ -1084,7 +1084,7 @@ app.get("/results/externalpage/:publicurl", async (request, response) => {
       let optionslist = await options.retrieveoptions(questionslist[i].id);
       valueoptions.push(optionslist);
       let answeroptions = [];
-      console.log();
+      console.log(optionslist);
       for (let j = 0; j < optionslist.length; j++) {
         let answerslist = await answers.retrivecountoptions(
           optionslist[j].id,
