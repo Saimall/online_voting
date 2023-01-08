@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const csrf = require("tiny-csrf");
+const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const {
   Admin,
@@ -29,7 +30,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(flash());
 app.use(cookieParser("Some secret String"));
 app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
-
+app.use(cors());
+//const axios = require('axios');
 app.use(
   session({
     secret: "my-super-secret-key-2837428907583420",
@@ -900,13 +902,13 @@ app.get(
 app.get("/externalpage/:publicurl", async (request, response) => {
   try {
     const election = await Election.getElectionurl(request.params.publicurl);
-    if (election.launched && !election.ended) {
+    if (!election.launched && election.ended) {
+      response.render("resultpage");
+    } else {
       return response.render("voterlogin", {
         publicurl: election.publicurl,
         csrfToken: request.csrfToken(),
       });
-    } else {
-      response.render("resultpage");
     }
   } catch (error) {
     console.log(error);
@@ -1079,6 +1081,10 @@ app.get("/results/externalpage/:publicurl", async (request, response) => {
     const answerslist = await answers.retriveanswers(election.id);
     let valueoptions = [];
     let numberofoptions = [];
+    let questionnames = [];
+    for (var k = 0; k < questionslist.length; k++) {
+      questionnames.push(questionslist[k].questionname);
+    }
 
     for (let i = 0; i < questionslist.length; i++) {
       let optionslist = await options.retrieveoptions(questionslist[i].id);
@@ -1099,10 +1105,11 @@ app.get("/results/externalpage/:publicurl", async (request, response) => {
     const countvotepending = await Voters.votersnotvoted(election.id);
     const countvoted = await Voters.votersvoted(election.id);
     const allvoters = countvotepending + countvoted;
-
     return response.render("resultpage", {
+      title: election.electionName,
       questionslist,
       answerslist,
+      questionnames,
       valueoptions,
       numberofoptions,
       countvoted,
