@@ -1144,6 +1144,14 @@ app.get(
       const admin = await Admin.findByPk(adminID);
       const election = await Election.findByPk(request.params.electionID);
       const Question = await questions.findByPk(request.params.questionID);
+      if (election.launched) {
+        request.flash("error", "Oopss!! seems like Election is launched!");
+        request.flash(
+          "error",
+          "can not modify the eletion while it is running!!!"
+        );
+        return response.redirect("/elections");
+      }
       response.render("modifyelection", {
         title: election.electionName,
         adminID: adminID,
