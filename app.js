@@ -809,11 +809,24 @@ app.post(
 );
 
 app.delete(
-  "/:id/voterdelete",
+  "/:id/voterdelete/:electionid",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
       try {
+        const election = Election.findByPk(request.params.electionid);
+        if (election.ended) {
+          request.flash("error", "Election got ended!! Can not delete voter!!");
+          return response.redirect(`/voters/${request.params.electionid}`);
+        }
+        const voter = Voters.findByPk(request.params.id);
+        if (voter.voted) {
+          request.flash(
+            "error",
+            "Seems like Voter Already casted Vote And Can not be deleted!! "
+          );
+          return response.redirect(`/voters/${request.params.electionid}`);
+        }
         const res = await Voters.delete(request.params.id);
         return response.json({ success: res === 1 });
       } catch (error) {
@@ -941,7 +954,6 @@ app.get("/vote/:publicurl/", async (request, response) => {
           const optionlist = await options.retrieveoptions(question[i].id);
           optionsnew.push(optionlist);
         }
-
         return response.render("voterview", {
           publicurl: request.params.publicurl,
           id: election.id,
@@ -1061,7 +1073,7 @@ app.post(
           if (admin) {
             await Admin.updatepassword(hashnewpassword, admin.email);
             request.flash("success", "Password changed successfully");
-            return response.redirect("/elections");
+            return response.redirect("/index");
           }
         } catch (error) {
           return response.status(422).json(error);
