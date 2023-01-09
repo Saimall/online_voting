@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Voters.belongsTo(models.Election, {
         foreignKey: "electionID",
+        onDelete: "CASCADE",
       });
 
       Voters.hasMany(models.answers, {

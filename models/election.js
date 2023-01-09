@@ -14,10 +14,33 @@ module.exports = (sequelize, DataTypes) => {
         adminID,
       });
     }
+
+    static modifyelection({ electionName, publicurl, electionid }) {
+      return this.update(
+        {
+          electionName: electionName,
+          publicurl: publicurl,
+        },
+        {
+          where: {
+            id: electionid,
+          },
+        }
+      );
+    }
+
     static getPublicurl(publicurl) {
       return this.findOne({
         where: {
           publicurl,
+        },
+      });
+    }
+
+    static removeelection(id) {
+      return this.destroy({
+        where: {
+          id,
         },
       });
     }
@@ -43,6 +66,15 @@ module.exports = (sequelize, DataTypes) => {
           adminID,
         },
         order: [["id", "ASC"]],
+      });
+    }
+
+    static findelection(electionName, publicurl) {
+      return this.findOne({
+        where: {
+          electionName: electionName,
+          publicurl: publicurl,
+        },
       });
     }
 

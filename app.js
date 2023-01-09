@@ -178,6 +178,7 @@ app.get(
             user,
             userName: username,
             elections_list,
+            csrfToken: request.csrfToken(),
           });
         } else {
           return response.json({
@@ -1133,5 +1134,72 @@ app.get("/results/externalpage/:publicurl", async (request, response) => {
     return response.status(422).json(console.error);
   }
 });
+
+app.get(
+  "/elections/:electionID/modify",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "admins") {
+      const adminID = request.user.id;
+      const admin = await Admin.findByPk(adminID);
+      const election = await Election.findByPk(request.params.electionID);
+      const Question = await questions.findByPk(request.params.questionID);
+      response.render("modifyelection", {
+        title: election.electionName,
+        adminID: adminID,
+        username: admin.name,
+        electionid: election.id,
+        election: election,
+        question: Question,
+        csrfToken: request.csrfToken(),
+      });
+    }
+  }
+);
+app.post(
+  "/elections/update/:electionid",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    if (request.user.case === "admins") {
+      if (request.body.electionName.length === 0) {
+        request.flash("error", "election name can not be empty!!");
+        return response.redirect("/create");
+      }
+      if (request.body.publicurl.length === 0) {
+        request.flash("error", "public url can not be empty!!");
+        return response.redirect("/create");
+      }
+      if (request.body.publicurl.includes(" ")) {
+        request.flash("error", "public url cannot containes spaces!!");
+        return response.redirect("/create");
+      }
+      const election = await Election.findByPk(request.params.electionid);
+      const electionid = election.id;
+      const electionexist = await Election.findelection(
+        request.body.electionName,
+        request.body.publicurl
+      );
+      if (electionexist) {
+        request.flash("error", "election name or URL is already Used!!");
+        return response.redirect(`/elections/${electionid}/modify`);
+      }
+      try {
+        await Election.modifyelection({
+          electionName: request.body.electionName,
+          publicurl: request.body.publicurl,
+          electionid: electionid,
+        });
+        request.flash("success", "modified succefully!!");
+        return response.redirect("/elections");
+      } catch (error) {
+        request.flash("error", "URL is already Used!!");
+        console.log(error);
+        return response.redirect("/create");
+      }
+    } else if (request.user.role === "voters") {
+      return response.redirect("/");
+    }
+  }
+);
 
 module.exports = app;
