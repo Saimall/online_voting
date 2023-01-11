@@ -1155,6 +1155,7 @@ app.get(
       const allvoters = countvotepending + countvoted;
       return response.render("adminresultpage", {
         title: election.electionName,
+        id: election.id,
         questionslist,
         answerslist,
         questionnames,
