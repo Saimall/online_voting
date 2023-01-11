@@ -916,8 +916,40 @@ app.get(
 app.get("/externalpage/:publicurl", async (request, response) => {
   try {
     const election = await Election.getElectionurl(request.params.publicurl);
+    const questionslist = await questions.retrievequestions(election.id);
+    const answerslist = await answers.retriveanswers(election.id);
+    let valueoptions = [];
+    let numberofoptions = [];
+    let questionnames = [];
+    for (var k = 0; k < questionslist.length; k++) {
+      questionnames.push(questionslist[k].questionname);
+    }
+
+    for (let i = 0; i < questionslist.length; i++) {
+      let optionslist = await options.retrieveoptions(questionslist[i].id);
+      valueoptions.push(optionslist);
+      let answeroptions = [];
+      console.log(optionslist);
+      for (let j = 0; j < optionslist.length; j++) {
+        let answerslist = await answers.retrivecountoptions(
+          optionslist[j].id,
+          election.id,
+          questionslist[i].id
+        );
+        console.log(answerslist);
+        answeroptions.push(answerslist);
+      }
+      numberofoptions.push(answeroptions);
+    }
     if (!election.launched && election.ended) {
-      response.render("resultpage");
+      response.render("voterresultpage", {
+        title: election.electionName,
+        questionslist,
+        answerslist,
+        questionnames,
+        valueoptions,
+        numberofoptions,
+      });
     } else {
       return response.render("voterlogin", {
         publicurl: election.publicurl,
@@ -1087,53 +1119,57 @@ app.post(
   }
 );
 
-app.get("/results/externalpage/:publicurl", async (request, response) => {
-  try {
-    const election = await Election.getElectionurl(request.params.publicurl);
-    const questionslist = await questions.retrievequestions(election.id);
-    const answerslist = await answers.retriveanswers(election.id);
-    let valueoptions = [];
-    let numberofoptions = [];
-    let questionnames = [];
-    for (var k = 0; k < questionslist.length; k++) {
-      questionnames.push(questionslist[k].questionname);
-    }
-
-    for (let i = 0; i < questionslist.length; i++) {
-      let optionslist = await options.retrieveoptions(questionslist[i].id);
-      valueoptions.push(optionslist);
-      let answeroptions = [];
-      console.log(optionslist);
-      for (let j = 0; j < optionslist.length; j++) {
-        let answerslist = await answers.retrivecountoptions(
-          optionslist[j].id,
-          election.id,
-          questionslist[i].id
-        );
-        console.log(answerslist);
-        answeroptions.push(answerslist);
+app.get(
+  "/results/externalpage/:publicurl",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    try {
+      const election = await Election.getElectionurl(request.params.publicurl);
+      const questionslist = await questions.retrievequestions(election.id);
+      const answerslist = await answers.retriveanswers(election.id);
+      let valueoptions = [];
+      let numberofoptions = [];
+      let questionnames = [];
+      for (var k = 0; k < questionslist.length; k++) {
+        questionnames.push(questionslist[k].questionname);
       }
-      numberofoptions.push(answeroptions);
+
+      for (let i = 0; i < questionslist.length; i++) {
+        let optionslist = await options.retrieveoptions(questionslist[i].id);
+        valueoptions.push(optionslist);
+        let answeroptions = [];
+        console.log(optionslist);
+        for (let j = 0; j < optionslist.length; j++) {
+          let answerslist = await answers.retrivecountoptions(
+            optionslist[j].id,
+            election.id,
+            questionslist[i].id
+          );
+          console.log(answerslist);
+          answeroptions.push(answerslist);
+        }
+        numberofoptions.push(answeroptions);
+      }
+      const countvotepending = await Voters.votersnotvoted(election.id);
+      const countvoted = await Voters.votersvoted(election.id);
+      const allvoters = countvotepending + countvoted;
+      return response.render("adminresultpage", {
+        title: election.electionName,
+        questionslist,
+        answerslist,
+        questionnames,
+        valueoptions,
+        numberofoptions,
+        countvoted,
+        countvotepending,
+        allvoters,
+      });
+    } catch (err) {
+      console.log(err);
+      return response.status(422).json(console.error);
     }
-    const countvotepending = await Voters.votersnotvoted(election.id);
-    const countvoted = await Voters.votersvoted(election.id);
-    const allvoters = countvotepending + countvoted;
-    return response.render("resultpage", {
-      title: election.electionName,
-      questionslist,
-      answerslist,
-      questionnames,
-      valueoptions,
-      numberofoptions,
-      countvoted,
-      countvotepending,
-      allvoters,
-    });
-  } catch (err) {
-    console.log(err);
-    return response.status(422).json(console.error);
   }
-});
+);
 
 app.get(
   "/elections/:electionID/modify",
