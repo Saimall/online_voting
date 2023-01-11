@@ -1161,6 +1161,8 @@ app.get(
         question: Question,
         csrfToken: request.csrfToken(),
       });
+    } else if (request.user.role === "voters") {
+      return response.redirect("/");
     }
   }
 );

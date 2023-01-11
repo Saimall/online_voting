@@ -4,87 +4,84 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <style>
+      .poll{
+    width: 350px;
+  padding: 1.5rem;
+  margin: 50px;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  border-radius: 5px;
+  background-color: lightskyblue;
+}
+       .poll__title{
+        font-weight:bold;
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+       }
+   </style>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.1.2/dist/chart.umd.min.js"></script>
-    <style type="text/css">
-             .chartBox{
-                width: 500px;
-             }
-    </style>
-    <title>Results</title>
-</head>
-<body style="background-color: burlywood;">
-    <h1 class="py-3 text-2xl">
-        <center>
-        <b>
-           <%=title%> Results
-        </b>
-    </center>
-    </h1>
-    <div class="flex flex-col justify-center items-center p-9">
-        <div class="flex flex-col justify-center md:w-2/5 w-full">
-            <div class="pt-8">
-    <center>
-     <div class="chartBox">
-    
-     <canvas id="chart"></canvas>
+  <title>
+    Result Page
+  </title>
+  </head>
+  <center>
+  <div class="grid grid-cols-6">
+    <div class="col-start-3 col-span-2">
+    <h3 class="text-2xl my-4 font-medium"><b><%= title %> Election Results </b></h3>
+    <p class="pt-2 text-black-600 text-sxl"><b>Total number of Voters Present in the election : </b><b><%= allvoters %></b></p>
+    <p class="pt-2 text-black-600 text-sxl"><b>Total number of Voters Casted their Vote : </b><b><%= countvoted %></b></p>
+    <p class="pt-2 text-black-600 text-sxl"><b>Total number of Voters Pending : </b><b><%= countvotepending %></b></p>
     </div>
+  </div>
 </center>
-        </div>
-        </div>
+<body style="background-color: cornsilk;">
+  <% for (var i=0; i<questionslist.length; i++) { %>
+  <div class="poll">
+     <div class="poll__title"><%= i+1 %>. <%= questionslist[i].questionname %>
+      <p class="text-gray-600"><%= questionslist[i].description %></p>
+      <div class="pt-6 pl-4 flex flex-col gap-3">
+        <% for (var j=0; j<valueoptions[i].length; j++) { %>
+           <div class="flex gap-1" >
+          <p class="flex items-center gap-2 text-xl"><%= valueoptions[i][j].optionname %>: <hr width="<%=numberofoptions[i][j]%>5%" style="height:20px; border-radius: 10px; cursor:pointer; background-color:gray; display: -webkit-inline-box;" /><p class="text-red-700 text-xl"><%= numberofoptions[i][j]%></p></p></div>
+        <% } %>
     </div>
-     <div>
-     <script>
-        const ctx = document.getElementById('chart');
-        new Chart(ctx, {
-                type: 'bar',
-                    data: {
-                    labels: ['one','two','three','four','five'],
-                        datasets: [{
-                            label: '# of Votes',
-                            data: [12, 19, 3, 5, 2,],
-                            backgroundColor: ['rgba(255,99,132,3)'],
-                            borderWidth: 1,
-                            fill:false,
-                            borderColor:('black')
-                             }]
-                            },
-                options: {
-                scales: {
-                y: {
-                  beginAtZero: true
-                }
+    </div>
+  </div>
+  <% } %>
 
-            }
-            }
-    });
-     </script>
-     <!-- </div>
-            <div class="flex flex-col gap-6">
-                <span class="text-5xl font-light ">result</span>
-                <span class="text-5xl font-light "><%= numberofoptions %></span>
-                <ol class="list-decimal mb-5">
-                    <% for(let i=0; i<questionslist.length; i++) { %>
-                        <li class="my-2">
-                            <div class="px-2 py-1">
-                                xlabels.push(<%= questionslist[i].questionname %>)
-                                <p class="text-purple-800 text-md my-2"><%= questionslist[i].description %></p>
-                            </div>
-                            <div class="ml-8">
-                                <ol class="list-none">
-                                    <% for(let j=0; j< valueoptions[i].length; j++) { %>
-                                            <li class="option-item mt-2">
-                                                <label class="px-1 my-2" class="ml-2 text-lg "><%= valueoptions[i][j].optionname %></label>
-                                                <label class="px-1 my-2"  class="ml-2 text-lg "><%= numberofoptions[i][j] %></label>
-                                            </li>
-                                    <% } %>
-                                </ol>
-                            </div>
-                        </li>
-                    <% } %>
-                </ol>
-            </div>
-            <div> -->
-            </div>
-        </body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- <div class="pt-8">
+    <div class="flex flex-col gap-6">
+      <% for (var i=0; i<questionslist.length; i++) { %>
+          <div>
+              <p class="font-bold text-xl"><%= i+1 %>. <%= questionslist[i].title %></p>
+              <p class="text-gray-600"><%= questionslist[i].description %></p>
+              <div class="pt-6 pl-6 flex flex-col gap-4">
+                  <% for (var j=0; j<valueoptions[i].length; j++) { %>
+                     <div class="flex gap-2"><hr width="<%= numberofoptions[i][j] %>%" style="height:30px; border:none; color:purple; background-color:purple;" /><p class="flex items-center gap-2 text-xl"><%= valueoptions[i][j].optionname %>:<b class="text-blue-700"><%= numberofoptions[i][j]%></b></p></div>
+                  <% } %>
+              </div>
+          </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+</div> -->
+</body>
 </html>
+   
