@@ -14,14 +14,14 @@
         </b>
           <form
             method="post"
-            action="/elections/<%= election.id %>/voter/<%= voter.id %>/modify"
+            action="/elections/<%= election.id %>/voter/<%= voterID %>/modify"
             class="flex flex-col gap-4 pt-4">
             <input type="hidden" name="_csrf" value="<%= csrf %>" />
             <div class="flex flex-col w-full">
               <input
                 type="text"
                 name="passowrd"
-                value="<%=voter.passowrd %>"
+                value=""
                 placeholder="voter passowrd"
                 class="border-2 border-black p-2 rounded-lg"
               />

@@ -61,13 +61,9 @@
                     
                                 </div>
                                 <div class="flex gap-2 text-600" align="center">
-                                    <div class="rounded w-fit px-2 py-1 flex gap-2 cursor-pointer hover:text-600">
-        
-                                        <a href="/elections/<%=election.id%>/voter/<%=voters[i].id%>/edit" class="text-sm">edit passowrd</a>
-                                    </div>
                                      <% if((voters.length) >1) {%> 
                                     <div class="rounded w-fit px-2 py-1 flex gap-2 cursor-pointer hover:text-600">    
-                                        <a onclick="removevoter(<%= voters[i].id %>,<%=election.id%>)" class="text-sm">delete voter</a>
+                                        <a onclick="removevoter(<%= voters[i].id %>,<%=id%>)" class="text-white bg-gray-600 hover:bg-gray-900 font-medium rounded px-2 py-1">delete voter</a>
                                          <%} %>
                                        
                                     </div>
@@ -80,5 +76,14 @@
         </div>
         <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
     </div>
+    <% if(messages && messages.error && messages.error.length > 0)  { %>
+        <% for(var i=0; i<messages.error.length; i++) { %>
+               <div class="bg-red-300 text-red-900 p-2 rounded-lg shadow">
+                <center>
+                <li><b> <%= messages.error[i] %></li></b>
+                </center>
+               </div>
+        <% } %>
+      <% } %> 
 </body>
 </html>
