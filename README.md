@@ -9,7 +9,7 @@ Besides Admin can add voters with voterid and password and can genrate a public 
 Voters can visit and login through that url and caste thier votes..
 At the end admin can end the election and can view the result of election.
 
-** # DEMO SCREEN SHOTS **:
+# **DEMO SCREEN SHOTS**:
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
  > Home Page:
 <img width="500"  height="300" alt="image" src="https://user-images.githubusercontent.com/113211361/212265173-9e593590-074f-4909-970e-94d6f6b0980a.png">
