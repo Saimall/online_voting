@@ -43,3 +43,7 @@ At the end admin can end the election and can view the result of election.
 
  https://www.loom.com/share/0565b23f80bb488780f25c5eee861999 <br>
                   https://www.loom.com/share/d50ba5bec3fc4491b67d710d799628b4 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  ## Live URL Application Link :
+
+  https://online-voting.onrender.com
