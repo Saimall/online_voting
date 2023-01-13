@@ -37,3 +37,8 @@ At the end admin can end the election and can view the result of election.
   
   > **results previewpage:**
   <img width="500"  height="300" alt="image" src="https://user-images.githubusercontent.com/113211361/212296975-660d4a41-a52a-4528-a69c-67797a297683.png">
+  
+  ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+  # **DEMO VIDEO**:
+          1) https://www.loom.com/share/0565b23f80bb488780f25c5eee861999
+          2)https://www.loom.com/share/d50ba5bec3fc4491b67d710d799628b4
