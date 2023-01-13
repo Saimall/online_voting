@@ -16,6 +16,9 @@ At the end admin can end the election and can view the result of election.
  
  > **signup page:**
  <img width="500"  height="300" alt="image" src="https://user-images.githubusercontent.com/113211361/212292574-3396d3c6-178a-46f8-9ae3-3540e5fd103d.png">
+ 
+ >  **login page:**
+ <imgwidth="500"  height="300" alt="image" src="https://user-images.githubusercontent.com/113211361/212293814-215c0700-560c-43c9-aa77-f2584b42f34d.png">
 
 
 
