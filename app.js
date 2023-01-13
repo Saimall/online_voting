@@ -1074,7 +1074,7 @@ app.post(
           if (admin) {
             await Admin.updatepassword(hashnewpassword, admin.email);
             request.flash("success", "Password changed successfully");
-            return response.redirect("/index");
+            return response.redirect("/signout");
           }
         } catch (error) {
           return response.status(422).json(error);
