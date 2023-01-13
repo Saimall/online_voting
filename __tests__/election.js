@@ -457,53 +457,6 @@ describe("Online election test suite ", function () {
     expect(response.statusCode).toBe(302);
   });
 
-  //  test("testing deleting a voter", async () => {
-  //   const agent = request.agent(server);
-  //   await login(agent, "sai@test.com", "12345678");
-
-  //   let res = await agent.get("/create");
-  //   let csrfToken = extractCsrfToken(res);
-  //   await agent.post("/elections").send({
-  //     electionName: "Election1",
-  //     publicurl: "url13",
-  //     _csrf: csrfToken,
-  //   });
-  //   const ElectionsResponse = await agent
-  //     .get("/elections")
-  //     .set("Accept", "application/json");
-  //   const parsedElectionsResponse = JSON.parse(ElectionsResponse.text);
-  //   const electionCount = parsedElectionsResponse.elections_list.length;
-  //   const latestElection =
-  //     parsedElectionsResponse.elections_list[electionCount - 1];
-
-  //   res = await agent.get(`/createvoter/${latestElection.id}`);
-  //   csrfToken = extractCsrfToken(res);
-  //   await agent.post(`/createvoter/${latestElection.id}`).send({
-  //     voterid: "23",
-  //     password: "12345",
-  //     _csrf: csrfToken,
-  //   });
-
-  //   const voterResponse = await agent
-  //     .get(`/createvoter/${latestElection.id}`)
-  //     .set("Accept", "application/json");
-  //   const parsedGroupedResponse = JSON.parse(voterResponse.text);
-  //   const voterCount = parsedGroupedResponse.voterslist.length;
-  //   const latestvoter = parsedGroupedResponse.voterslist[voterCount - 1];
-  //   console.log(latestvoter);
-  //   res = await agent.get(
-  //     `/voters/${latestvoter.id}`
-  //   );
-  //   csrfToken = extractCsrfToken(res);
-  //   const deleteresponse = await agent
-  //     .delete(`/${latestvoter.id}/voterdelete`)
-  //     .send({
-  //       _csrf: csrfToken,
-  //     });
-  //   const parseddeleteResponse = JSON.parse(deleteresponse.text);
-  //   expect(parseddeleteResponse.success).toBe(true);
-  // });
-
   test("testing prevewing of election", async () => {
     const agent = request.agent(server);
     await login(agent, "sai@test.com", "12345678");
