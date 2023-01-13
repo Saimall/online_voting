@@ -11,7 +11,11 @@ At the end admin can end the election and can view the result of election.
 
 # **DEMO SCREEN SHOTS**:
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
- > Home Page:
+ > **Home Page:**
 <img width="500"  height="300" alt="image" src="https://user-images.githubusercontent.com/113211361/212265173-9e593590-074f-4909-970e-94d6f6b0980a.png">
+ 
+ > **signup page:**
+ <img width="500"  height="300" alt="image" src="https://user-images.githubusercontent.com/113211361/212292574-3396d3c6-178a-46f8-9ae3-3540e5fd103d.png">
+
 
 
