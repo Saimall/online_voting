@@ -773,62 +773,31 @@ app.post(
   }
 );
 
-app.get(
-  "/elections/:electionID/voter/:voterID/edit",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    if (request.user.case === "admins") {
-      const election = await Election.findByPk(request.params.electionID);
-      const voter = await Voters.findByPk(request.params.voterID);
-      console.log(voter);
-      response.render("modifyvoters", {
-        voter: voter,
-        election: election,
-        csrf: request.csrfToken(),
-      });
-    }
-  }
-);
-
-app.post(
-  "/elections/:electionID/voter/:voterID/modify",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    if (request.user.case === "admins") {
-      try {
-        await Voters.modifypassword(
-          request.params.voterID,
-          request.body.password
-        );
-        response.redirect(`/voters/${request.params.electionID}`);
-      } catch (error) {
-        console.log(error);
-        return;
-      }
-    }
-  }
-);
-
 app.delete(
   "/:id/voterdelete/:electionid",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
       try {
-        const election = Election.findByPk(request.params.electionid);
+        const adminID = request.user.id;
+        const election = Election.retriveelection(
+          request.params.electionid,
+          adminID
+        );
         if (election.ended) {
           request.flash("error", "Election got ended!! Can not delete voter!!");
-          return response.redirect(`/voters/${request.params.electionid}`);
+          return response.json(`/voters/${request.params.electionid}`);
         }
-        const voter = Voters.findByPk(request.params.id);
+        const voter = await Voters.findVoter(request.params.id);
+        console.log(voter.id);
         if (voter.voted) {
           request.flash(
             "error",
             "Seems like Voter Already casted Vote And Can not be deleted!! "
           );
-          return response.redirect(`/voters/${request.params.electionid}`);
+          return response.json(`/voters/${request.params.electionid}`);
         }
-        const res = await Voters.delete(request.params.id);
+        const res = await Voters.removevoter(request.params.id);
         return response.json({ success: res === 1 });
       } catch (error) {
         console.log(error);
@@ -837,7 +806,6 @@ app.delete(
     }
   }
 );
-
 app.get(
   "/election/:id/launch",
   connectEnsureLogin.ensureLoggedIn(),
@@ -1198,7 +1166,7 @@ app.get(
         question: Question,
         csrfToken: request.csrfToken(),
       });
-    } else if (request.user.role === "voters") {
+    } else if (request.user.case === "voters") {
       return response.redirect("/");
     }
   }
@@ -1243,7 +1211,7 @@ app.post(
         console.log(error);
         return response.redirect("/create");
       }
-    } else if (request.user.role === "voters") {
+    } else if (request.user.case === "voters") {
       return response.redirect("/");
     }
   }
