@@ -12,9 +12,9 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "electionID",
         onDelete: "CASCADE",
       });
-
       Voters.hasMany(models.answers, {
         foreignKey: "voterid",
+        onDelete: "CASCADE",
       });
     }
     static add(Voterid, password, electionID) {
@@ -70,18 +70,18 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
-    static findVoter(Voterid) {
+    static findVoter(id) {
       return this.findOne({
         where: {
-          voterid: Voterid,
+          id,
         },
       });
     }
 
-    static delete(voterid) {
+    static removevoter(id) {
       return this.destroy({
         where: {
-          voterid: voterid,
+          id,
         },
       });
     }

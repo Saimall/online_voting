@@ -77,6 +77,14 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
+    static retriveelection(electionID, adminid) {
+      return this.findOne({
+        where: {
+          id: electionID,
+          adminID: adminid,
+        },
+      });
+    }
 
     static launch(id) {
       return this.update(
@@ -109,12 +117,15 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Election.belongsTo(models.Admin, {
         foreignKey: "adminID",
+        onDelete: "CASCADE",
       });
       Election.hasMany(models.questions, {
         foreignKey: "electionID",
+        onDelete: "CASCADE",
       });
       Election.hasMany(models.Voters, {
         foreignKey: "electionID",
+        onDelete: "CASCADE",
       });
     }
   }

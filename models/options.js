@@ -57,7 +57,6 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       options.belongsTo(models.questions, {
         foreignKey: "questionID",
-        onDelete: "CASCADE",
       });
 
       options.hasMany(models.answers, {

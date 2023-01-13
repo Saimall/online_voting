@@ -45,9 +45,11 @@ module.exports = (sequelize, DataTypes) => {
 
       answers.belongsTo(models.Voters, {
         foreignKey: "voterid",
+        onDelete: "CASCADE",
       });
       answers.belongsTo(models.options, {
         foreignKey: "chossedoption",
+        onDelete: "CASCADE",
       });
 
       // define association here
