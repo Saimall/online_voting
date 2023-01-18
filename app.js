@@ -659,10 +659,10 @@ app.get(
 app.get("/voters/listofelections/:id", async (request, response) => {
   if (request.user.case === "admins") {
     try {
-      const electionname = await Election.getElections(
-        request.params.id,
-        request.user.id
-      );
+      // const electionname = await Election.getElections(
+      //   request.params.id,
+      //   request.user.id
+      // );
       const countofquestions = await questions.countquestions(
         request.params.id
       );
@@ -672,7 +672,7 @@ app.get("/voters/listofelections/:id", async (request, response) => {
         publicurl: election.publicurl,
         election: election,
         id: request.params.id,
-        title: electionname.electionName,
+        title: election.electionName,
         countquestions: countofquestions,
         countvoters: countofvoters,
       });
