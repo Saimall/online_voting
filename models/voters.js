@@ -101,9 +101,24 @@ module.exports = (sequelize, DataTypes) => {
   }
   Voters.init(
     {
-      voterid: DataTypes.STRING,
+      voterid: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+        validate: {
+          notEmpty: true,
+          notNull: true,
+        },
+      },
       voted: DataTypes.BOOLEAN,
-      password: DataTypes.STRING,
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notNull: true,
+          notEmpty: true,
+        },
+      },
       case: DataTypes.STRING,
     },
     {

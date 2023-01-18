@@ -87,7 +87,14 @@ module.exports = (sequelize, DataTypes) => {
 
   questions.init(
     {
-      questionname: DataTypes.STRING,
+      questionname: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: true,
+          notNull: true,
+        },
+      },
       description: DataTypes.STRING,
     },
     {
