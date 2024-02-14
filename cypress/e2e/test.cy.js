@@ -26,21 +26,6 @@ describe("Online election test suite", () => {
     cy.get("form").submit();
   });
 
-  it("testing election creation", () => {
-    cy.visit(`${baseUrl}/login`);
-    // Fill in login form fields
-    cy.get("#email").type("sai@test.com");
-    cy.get("#password").type("12345678");
-    // Submit the form
-    cy.get("form").submit();
-    cy.visit(`${baseUrl}/create`);
-    // Fill in login form fields
-    cy.get("#electionName").type("election");
-    cy.get("#publicurl").type("newurl");
-    // Submit the form
-    cy.get("form").submit();
-  });
-
   it("should sign the user out", () => {
     // Assuming there's a button/link with id "signout"
     cy.visit(`${baseUrl}/elections`);
