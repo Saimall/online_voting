@@ -35,7 +35,7 @@ describe("Online election test suite", () => {
     cy.get("form").submit();
     cy.visit(`${baseUrl}/create`);
     // Fill in login form fields
-    cy.get("#electionName").type("election1");
+    cy.get("#electionName").type("election");
     cy.get("#publicurl").type("newurl");
     // Submit the form
     cy.get("form").submit();
