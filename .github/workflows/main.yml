@@ -3,7 +3,7 @@ on: push
 env:
   PG_DATABASE: online_voting_DB
   PG_USER: postgres
-  PG_PASSWORD: mallik
+  PG_PASSWORD: ${{ secrets.POSTGRESQL_PW }}
 jobs:
   # Label of the container job
   run-tests:
