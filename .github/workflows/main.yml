@@ -3,7 +3,7 @@ on: push
 env:
   PG_DATABASE: online_voting_DB
   PG_USER: postgres
-  PG_PASSWORD: ${{ secrets.POSTGRESQL_PW }}
+  PG_PASSWORD: ${{ secrets.password_DB }}
 jobs:
   # Label of the container job
   run-tests:
@@ -19,7 +19,7 @@ jobs:
         # Provide the password for postgres
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: mallik
+          POSTGRES_PASSWORD: ${{secrets.password_DB }}
           POSTGRES_DB: online_voting_DB
         # Set health checks to wait until postgres has started
         options: >-
