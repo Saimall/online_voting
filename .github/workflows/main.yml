@@ -71,13 +71,14 @@ jobs:
   notifications:
     needs: [run-tests, deploy] ## should run tests and deployments
     runs-on: ubuntu-latest
+    if: ${{ always() }} ## runs or indepnedt on previous jobs. i.e always show notifications
     steps:
       - name: Discord Notifications
         env:
           DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
         run: |
           if [[ ${{ needs.run-tests.result }} == 'success' && ${{ needs.deploy.result }} == 'success' ]]; then
-            curl -X POST -H 'Content-type: application/json' --data '{"text":"Workflow *Auto test ProHire* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"WorkflowCompletionStatus for *Testing and deployment* completed succesfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
           else
-            curl -X POST -H 'Content-type: application/json' --data '{"text":"Workflow *Auto test ProHire* failed.\nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"WorkflowCompletionStatus for *Testing and deployment* failed.\nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
           fi
