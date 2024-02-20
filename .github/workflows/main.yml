@@ -71,7 +71,7 @@ jobs:
   notifications:
     needs: [run-tests, deploy] ## should run tests and deployments
     runs-on: ubuntu-latest
-    if: ${{ always() }} ## runs or indepnedt on previous jobs. i.e always show notifications
+    # if: ${{ always() }} ## runs or indepnedt on previous jobs. i.e always show notifications
     steps:
       - name: Discord Notifications
         env:
