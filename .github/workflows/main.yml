@@ -56,14 +56,14 @@ jobs:
           npm install cypress cypress-json-results
           npx cypress run
 
-    deploy:
-      name: Auto Deployment
-      needs: [run-tests] #before deployment
-      runs-on: ubuntu-latest
+  deploy:
+    name: Auto Deployment
+    needs: [run-tests] #before deployment run tests
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Backend application deployment in Render
-          uses: johnbeynon/render-deploy-action@v0.0.8
-          with:
-            service-id: ${{ secrets.RENDER_SERVICEID}}
-            api-key: ${{ secrets.API_TOKEN }}
+    steps:
+      - name: Backend application deployment in Render
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICEID}}
+          api-key: ${{ secrets.API_TOKEN }}
