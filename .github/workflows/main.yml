@@ -57,7 +57,7 @@ jobs:
           npx cypress run
 
   deploy:
-    name: Auto Deployment
+    name: Automaic Deployment
     needs: [run-tests] #before deployment run tests
     runs-on: ubuntu-latest
 
@@ -67,3 +67,17 @@ jobs:
         with:
           service-id: ${{ secrets.RENDER_SERVICEID}}
           api-key: ${{ secrets.API_TOKEN }}
+
+  notifications:
+    needs: [run-tests, deploy] ## should run tests and deployments
+    runs-on: ubuntu-latest
+    steps:
+      - name: Discord Notifications
+        env:
+          DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
+        run: |
+          if [[ ${{ needs.run-tests.result }} == 'success' && ${{ needs.deploy.result }} == 'success' ]]; then
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"Workflow *Auto test ProHire* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+          else
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"Workflow *Auto test ProHire* failed.\nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+          fi
