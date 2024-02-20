@@ -77,7 +77,7 @@ jobs:
         env:
           DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
         run: |
-          if [[ ${{ needs.run-tests.result }} == success && ${{ needs.deploy.result }} == success ]]; then
+          if [[ ${{ needs.run-tests.result }} == 'success' && ${{ needs.deploy.result }} == 'success' ]]; then
             curl -X POST -H 'Content-type: application/json' --data '{"text":"WorkflowCompletionStatus for *Testing and deployment* completed succesfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
           else
             curl -X POST -H 'Content-type: application/json' --data '{"text":"WorkflowCompletionStatus for *Testing and deployment* failed.\nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
