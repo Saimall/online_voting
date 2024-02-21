@@ -82,9 +82,9 @@ jobs:
           DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
         run: |
           if [[ ${{ needs.run-tests.result }} == 'success' ]]; then
-            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Test cases* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Test cases* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{github.job_id}}"}' $DISCORD_WEBHOOKURL
           else
-            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Test cases* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Test cases* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{github.job_id}}"}' $DISCORD_WEBHOOKURL
           fi
 
   notifications-deploy:
@@ -98,9 +98,9 @@ jobs:
           DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
         run: |
           if [[ ${{ needs.deploy.result }} == 'success' ]]; then
-            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of application* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of application* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{github.job_id}}"}' $DISCORD_WEBHOOKURL
           else
-            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of the application* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of the application* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{github.job_id}}"}' $DISCORD_WEBHOOKURL
           fi
 
   push-notification:
@@ -112,7 +112,7 @@ jobs:
         env:
           DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"content":"A new push event has been triggered on the master branch of the repository. Check it out at: https://github.com/${{ github.repository }}/tree/${{ github.ref }}"}' $DISCORD_WEBHOOKURL
+          curl -X POST -H 'Content-type: application/json' --data '{"content":"A new push event has been triggered on the master branch of the repository. Check it out at: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"}' $DISCORD_WEBHOOKURL
 
   # notifications:
   #   needs: [run-tests, deploy] ## should run tests and deployments
