@@ -236,7 +236,7 @@ app.post(
         });
         return response.redirect("/elections");
       } catch (error) {
-        request.flash("error", "URL is already Used!!");
+        request.flash("error", "URL already Used!!");
         console.log(error);
         return response.redirect("/create");
       }
