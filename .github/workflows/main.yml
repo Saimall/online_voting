@@ -25,7 +25,7 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npm run lint
+        run: npx lint-staged
 
   run-tests:
     # Containers must run in Linux based operating systems
