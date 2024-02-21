@@ -79,7 +79,7 @@ jobs:
 
   deploy:
     name: Automaic Deployment
-    needs: [run-tests] #before deployment run tests
+    needs: [run-tests] #before deployment run
     runs-on: ubuntu-latest
 
     steps:
