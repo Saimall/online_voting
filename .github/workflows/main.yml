@@ -28,7 +28,7 @@ jobs:
         run: npx lint-staged
 
   run-tests:
-    # Containers must run in Linux based operating systems
+    # Containers must run in Linux based operating
     runs-on: ubuntu-latest
 
     # Service containers to run with `container-job`
