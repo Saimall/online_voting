@@ -123,7 +123,7 @@ jobs:
 
   notifications-deploy:
     name: Deployment Notifications
-    needs: [deploy] ## should run deployment
+    needs: [deploy] ## should deployment
     runs-on: ubuntu-latest
     if: ${{ always() }} ## runs or independent on previous jobs. i.e  notifications
     steps:
