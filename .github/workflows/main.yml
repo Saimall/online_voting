@@ -1,5 +1,8 @@
 name: Auto tests For OnlineVotingApplication
-on: push
+on:
+  push:
+    branches:
+      - master
 env:
   PG_DATABASE: online_voting_DB
   PG_USER: postgres
@@ -68,24 +71,67 @@ jobs:
           service-id: ${{ secrets.RENDER_SERVICEID}}
           api-key: ${{ secrets.API_TOKEN }}
 
-  notifications:
-    needs: [run-tests, deploy] ## should run tests and deployments
+  notifications-tests:
+    name: Test Notifications
+    needs: [run-tests] ## should run tests
     runs-on: ubuntu-latest
-    if: ${{ always() }} ## runs or indepnedt on previous jobs. i.e always show notifications
+    if: ${{ always() }} ## runs or independent on previous jobs. i.e always show notifications
     steps:
-      - name: Discord Notifications
+      - name: Discord Notifications for Test Results
         env:
           DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
         run: |
           if [[ ${{ needs.run-tests.result }} == 'success' ]]; then
             curl -X POST -H 'Content-type: application/json' --data '{"content":" *Test cases* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
-          fi
-          if [[ ${{ needs.deploy.result }} == 'success' ]]; then
-            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of application* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
-          fi
-          if [[ ${{ needs.run-tests.result }} == 'failure' ]]; then
+          else
             curl -X POST -H 'Content-type: application/json' --data '{"content":" *Test cases* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
           fi
-          if [[ ${{ needs.deploy.result }} == 'failure' ]]; then
+
+  notifications-deploy:
+    name: Deployment Notifications
+    needs: [deploy] ## should run deployment
+    runs-on: ubuntu-latest
+    if: ${{ always() }} ## runs or independent on previous jobs. i.e always show notifications
+    steps:
+      - name: Discord Notifications for Deployment Results
+        env:
+          DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
+        run: |
+          if [[ ${{ needs.deploy.result }} == 'success' ]]; then
+            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of application* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+          else
             curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of the application* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
           fi
+
+  push-notification:
+    name: Push Notification
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Discord Notifications for Push Event
+        env:
+          DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{"content":"A new push event has been triggered on the master branch of the repository. Check it out at: https://github.com/${{ github.repository }}/tree/${{ github.ref }}"}' $DISCORD_WEBHOOKURL
+
+  # notifications:
+  #   needs: [run-tests, deploy] ## should run tests and deployments
+  #   runs-on: ubuntu-latest
+  #   if: ${{ always() }} ## runs or indepnedt on previous jobs. i.e always show notifications
+  #   steps:
+  #     - name: Discord Notifications
+  #       env:
+  #         DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
+  #       run: |
+  #         if [[ ${{ needs.run-tests.result }} == 'success' ]]; then
+  #           curl -X POST -H 'Content-type: application/json' --data '{"content":" *Test cases* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+  #         fi
+  #         if [[ ${{ needs.deploy.result }} == 'success' ]]; then
+  #           curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of application* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+  #         fi
+  #         if [[ ${{ needs.run-tests.result }} == 'failure' ]]; then
+  #           curl -X POST -H 'Content-type: application/json' --data '{"content":" *Test cases* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+  #         fi
+  #         if [[ ${{ needs.deploy.result }} == 'failure' ]]; then
+  #           curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of the application* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+  #         fi
