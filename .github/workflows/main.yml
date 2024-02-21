@@ -125,7 +125,7 @@ jobs:
     name: Deployment Notifications
     needs: [deploy] ## should run deployment
     runs-on: ubuntu-latest
-    if: ${{ always() }} ## runs or independent on previous jobs. i.e always  notifications
+    if: ${{ always() }} ## runs or independent on previous jobs. i.e  notifications
     steps:
       - name: Discord Notifications for Deployment Results
         env:
