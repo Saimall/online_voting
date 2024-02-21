@@ -100,7 +100,7 @@ jobs:
           if [[ ${{ needs.deploy.result }} == 'success' ]]; then
             curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of application* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${job.id}}"}' $DISCORD_WEBHOOKURL
           else
-            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of the application* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{jobs.id}}"}' $DISCORD_WEBHOOKURL
+            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of the application* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{job.id}}"}' $DISCORD_WEBHOOKURL
           fi
 
   push-notification:
