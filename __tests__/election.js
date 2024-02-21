@@ -84,7 +84,7 @@ describe("Online election test suite ", function () {
 
     let res = await agent.get("/create");
     let csrfToken = extractCsrfToken(res);
-    await agent.post("/elections").send({
+    await agent.post("lections").send({
       electionName: "Test election",
       publicurl: "welcome",
       _csrf: csrfToken,
