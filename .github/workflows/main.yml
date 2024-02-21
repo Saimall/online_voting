@@ -147,25 +147,3 @@ jobs:
           DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
         run: |
           curl -X POST -H 'Content-type: application/json' --data '{"content":"A new push event has been triggered on the master branch of the repository. Check it out at: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"}' $DISCORD_WEBHOOKURL
-
-  # notifications:
-  #   needs: [run-tests, deploy] ## should run tests and deployments
-  #   runs-on: ubuntu-latest
-  #   if: ${{ always() }} ## runs or indepnedt on previous jobs. i.e always show notifications
-  #   steps:
-  #     - name: Discord Notifications
-  #       env:
-  #         DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
-  #       run: |
-  #         if [[ ${{ needs.run-tests.result }} == 'success' ]]; then
-  #           curl -X POST -H 'Content-type: application/json' --data '{"content":" *Test cases* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
-  #         fi
-  #         if [[ ${{ needs.deploy.result }} == 'success' ]]; then
-  #           curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of application* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
-  #         fi
-  #         if [[ ${{ needs.run-tests.result }} == 'failure' ]]; then
-  #           curl -X POST -H 'Content-type: application/json' --data '{"content":" *Test cases* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
-  #         fi
-  #         if [[ ${{ needs.deploy.result }} == 'failure' ]]; then
-  #           curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of the application* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
-  #         fi
