@@ -107,7 +107,7 @@ jobs:
 
   notifications-codevalidation:
     name: Code validation Notifications
-    needs: [lint] ## should run deployment
+    needs: [lint] ## should run
     runs-on: ubuntu-latest
     if: ${{ always() }} ## runs or independent on previous jobs. i.e always show notifications
     steps:
