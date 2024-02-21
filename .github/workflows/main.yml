@@ -105,7 +105,7 @@ jobs:
             curl -X POST -H 'Content-type: application/json' --data '{"content":" *Test cases* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
           fi
 
-  notifications-code validation:
+  notifications-codevalidation:
     name: Code validation Notifications
     needs: [lint] ## should run deployment
     runs-on: ubuntu-latest
