@@ -8,9 +8,8 @@ module.exports = {
       error_file: "logs/error.log",
       out_file: "logs/output.log",
       merge_logs: true,
-      watch: true,
       env_production: {
-        PORT: 7000,
+        PORT: process.env.PORT || 7000,
       },
     },
   ],
