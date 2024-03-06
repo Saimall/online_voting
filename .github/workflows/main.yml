@@ -146,21 +146,21 @@ jobs:
             curl -X POST -H 'Content-type: application/json' --data '{"content":" *Code validation* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
           fi
 
-    notifications-dockerization:
-      name: Dockerization Notifications
-      needs: [build] ## should deployment
-      runs-on: ubuntu-latest
-      if: ${{ always() }} ## runs or independent on previous jobs. i.e  notifications
-      steps:
-        - name: Dockerization Notifications for Dockerization Results
-          env:
-            DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
-          run: |
-            if [[ ${{ needs.build.result }} == 'success' ]]; then
-              curl -X POST -H 'Content-type: application/json' --data '{"content":" *Dockerization of application* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
-            else
-              curl -X POST -H 'Content-type: application/json' --data '{"content":" *Dockerization of the application* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
-            fi
+  notifications-dockerization:
+    name: Dockerization Notifications
+    needs: [build] ## should deployment
+    runs-on: ubuntu-latest
+    if: ${{ always() }} ## runs or independent on previous jobs. i.e  notifications
+    steps:
+      - name: Dockerization Notifications for Dockerization Results
+        env:
+          DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
+        run: |
+          if [[ ${{ needs.build.result }} == 'success' ]]; then
+            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Dockerization of application* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+          else
+            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Dockerization of the application* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+          fi
 
   notifications-deploy:
     name: Deployment Notifications
