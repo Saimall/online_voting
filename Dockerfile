@@ -1,8 +1,8 @@
 FROM --platform=$BUILDPLATFORM node:lts-alpine as base
 WORKDIR /app
 COPY package.json /
+COPY . /app   
 EXPOSE 7000
-
 
 FROM base as production
 ENV NODE_ENV=production

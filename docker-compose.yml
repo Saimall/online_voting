@@ -16,7 +16,7 @@ services:
   db:
     image: postgres:15
     volumes:
-      - pg-prod-data:/var/lib/postgresql/data
+      - pg-dev-data:/var/lib/postgresql/data
     env_file:
       - .env
     environment:
@@ -25,4 +25,4 @@ services:
       POSTGRES_PASSWORD: $DEV_PASSWORD
 
 volumes:
-  pg-prod-data:
+  pg-dev-data:
