@@ -8,7 +8,7 @@ env:
   PG_USER: postgres
   PG_PASSWORD: ${{ secrets.password_DB }}
 jobs:
-  #Code validation
+  #Code validati
   lint:
     name: Validation code
     runs-on: ubuntu-latest
