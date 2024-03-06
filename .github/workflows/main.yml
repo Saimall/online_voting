@@ -77,6 +77,31 @@ jobs:
           npm install cypress cypress-json-results
           npx cypress run
 
+  build:
+    name: Dockerization
+    needs: [run-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Login to Docker desktop
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+      - name: Docker Set up
+        uses: docker/setup-buildx-action@v3
+
+      - name: Building and updating to hub
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/megabyte:latest
+
   deploy:
     name: Automaic Deployment
     needs: [run-tests] #before deployment run
@@ -135,6 +160,22 @@ jobs:
             curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of application* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
           else
             curl -X POST -H 'Content-type: application/json' --data '{"content":" *Deployment of the application* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+          fi
+
+  notifications-dockerization:
+    name: Dockerization Notifications
+    needs: [build] ## should deployment
+    runs-on: ubuntu-latest
+    if: ${{ always() }} ## runs or independent on previous jobs. i.e  notifications
+    steps:
+      - name: Dockerization Notifications for Dockerization Results
+        env:
+          DISCORD_WEBHOOKURL: ${{ secrets.DISCORD_WEBHOOKURL }}
+        run: |
+          if [[ ${{ needs.build.result }} == 'success' ]]; then
+            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Dockerization of application* completed successfully. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
+          else
+            curl -X POST -H 'Content-type: application/json' --data '{"content":" *Dockerization of the application* failed. \nCheck the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' $DISCORD_WEBHOOKURL
           fi
 
   push-notification:
