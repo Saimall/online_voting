@@ -27,7 +27,7 @@ require("dotenv").config();
 const Openai = require("openai");
 
 const openai = new Openai({
-  apiKey: process.env["OPENAI_API_KEY"],
+  apiKey: "sk - y8PpZdOvnBKSdalyym2RT3BlbkFJYmJwwswV77ohwOmkILhZ",
 });
 //conecting chatgpt
 async function askChatGPT(question) {
