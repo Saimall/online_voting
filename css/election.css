@@ -1,0 +1,78 @@
+.popup {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  right: 30px;
+  max-width: 350px;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #f0f0f0;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+}
+
+.popup-content {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.chat-header {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-container {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.user-message {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.bot-message {
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.chat-input {
+  display: flex;
+  align-items: center;
+}
+
+.message-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-right: 10px;
+}
+
+.send-button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.close {
+  cursor: pointer;
+}
+
+.close:hover,
+.send-button:hover {
+  background-color: #45a049;
+}

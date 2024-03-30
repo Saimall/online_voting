@@ -23,6 +23,51 @@ const { AsyncLocalStorage } = require("async_hooks");
 const flash = require("connect-flash");
 const election = require("./models/election");
 const saltRounds = 10;
+require("dotenv").config();
+const Openai = require("openai");
+
+const openai = new Openai({
+  apiKey: process.env["OPENAI_API_KEY"],
+});
+//conecting chatgpt
+async function askChatGPT(question) {
+  try {
+    const chatCompletion = await openai.chat.completions.create({
+      messages: [{ role: "user", content: question }],
+      model: "gpt-3.5-turbo",
+    });
+    return chatCompletion.choices[0].message.content;
+  } catch (error) {
+    console.error("Error while making qury to chatgpt: ", error);
+  }
+}
+
+async function createElectionwithChatgpt(question) {
+  const suggestion = await askChatGPT(
+    "Is this a" + question + "valid or not" + "kindly give yes or no response"
+  );
+
+  return suggestion;
+}
+
+async function createQuestionwithChatgpt(question) {
+  const suggestion = await askChatGPT(
+    "Is this question valid, Please respond with either Yes or No" +
+      "below is the question:" +
+      question
+  );
+  return suggestion;
+}
+
+async function createVoteridwithChatgpt(question) {
+  const suggestion = await askChatGPT(
+    "Is this voterID contains alphabets and numbers, Please respond with either Yes or No" +
+      "below is the voterID:" +
+      question
+  );
+  return suggestion;
+}
+
 app.use(bodyParser.json());
 app.set("views", path.join(__dirname, "views"));
 app.use(bodyParser.json());
@@ -31,7 +76,7 @@ app.use(flash());
 app.use(cookieParser("Some secret String"));
 app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
 app.use(cors());
-//const axios = require('axios');
+
 app.use(
   session({
     secret: "my-super-secret-key-2837428907583420",
@@ -214,7 +259,13 @@ app.post(
   "/elections",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
+    const res = await createElectionwithChatgpt(request.body.electionName);
+    console.log("Respone", res);
     if (request.user.case === "admins") {
+      if (res == "No") {
+        request.flash("error", "Improper election Name!!");
+        return response.redirect("/create");
+      }
       if (request.body.electionName.length === 0) {
         request.flash("error", "election name can not be empty!!");
         return response.redirect("/create");
@@ -407,6 +458,12 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
+      const res = await createQuestionwithChatgpt(request.body.questionname);
+      console.log("Respone", res);
+      if (res == "No") {
+        request.flash("error", "Improper question format!!");
+        return response.redirect(`/questionscreate/${request.params.id}`);
+      }
       if (!request.body.questionname) {
         request.flash("error", "Question can not be empty!!");
         return response.redirect(`/questionscreate/${request.params.id}`);
@@ -744,6 +801,12 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     if (request.user.case === "admins") {
+      const res = await createVoteridwithChatgpt(request.body.voterid);
+      console.log("Respone", res);
+      if (res == "No") {
+        request.flash("error", "Invalid voterID!!");
+        return response.redirect(`/createvoter/${request.params.id}`);
+      }
       if (request.body.voterid.length == 0) {
         request.flash("error", "Voter ID Can not be null!!");
         return response.redirect(`/createvoter/${request.params.id}`);
